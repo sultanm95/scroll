@@ -1,0 +1,51 @@
+.reviews-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.reviews-header {
+  background: var(--header-bg);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.reviews-header h1 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 2rem;
+}
+
+.reviews-header p {
+  margin: 1rem 0 0;
+  color: var(--text-secondary);
+}
+
+.reviews-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.coming-soon {
+  text-align: center;
+  color: var(--text-color);
+}
+
+.coming-soon .material-icons {
+  font-size: 4rem;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.coming-soon h2 {
+  margin: 0 0 1rem;
+}
+
+.coming-soon p {
+  color: var(--text-secondary);
+  margin: 0;
+}

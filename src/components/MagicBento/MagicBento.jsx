@@ -1,14 +1,16 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { gsap } from 'gsap';
 import { useAuth } from '../Auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './MagicBento.css';
 
-const DEFAULT_PARTICLE_COUNT = 12;
+const DEFAULT_PARTICLE_COUNT = 20;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
 const DEFAULT_GLOW_COLOR = '255, 76, 76'; // #ff4c4c
 const MOBILE_BREAKPOINT = 768;
 
 const generateDefaultCardData = (userData) => {
+  console.log('Generating card data for user:', userData);
   const baseCards = [
     {
       color: '#060010',
@@ -16,7 +18,8 @@ const generateDefaultCardData = (userData) => {
       description: 'Loading...',
       label: 'Profile',
       avatar: '',
-      backgroundImage: ''
+      backgroundImage: '',
+      link: '/profile'
     },
     {
       color: '#060010',
@@ -27,47 +30,19 @@ const generateDefaultCardData = (userData) => {
     },
     {
       color: '#060010',
-      title: 'Любимые',
-      description: userData ? `${userData.library?.favorites?.length || 0} в избранном` : 'Добавьте свои любимые манги',
-      label: 'Favorites',
-      link: '/favorites'
+      title: 'Отзывы',
+      description:'Ваш список отзывов',
+      label: 'Reviews',
+      link: '/reviews'
     },
     {
       color: '#060010',
-      title: 'Читаю',
-      description: userData ? `${userData.library?.reading?.length || 0} в процессе` : 'Начните читать мангу',
-      label: 'Reading',
-      link: '/reading'
-    },
-    {
-      color: '#060010',
-      title: 'Завершено',
-      description: userData ? `${userData.library?.completed?.length || 0} завершено` : 'Отмечайте прочитанные',
-      label: 'Completed',
-      link: '/completed'
-    },
-    {
-      color: '#060010',
-      title: 'Брошено',
-      description: userData ? `${userData.library?.dropped?.length || 0} брошено` : 'Нет брошенных',
-      label: 'Dropped',
-      link: '/dropped'
+      title: 'Настройки',
+      description:'Настройки вашего аккаунта',
+      label: 'Settings',
+      link: '/settings'
     }
   ];
-
-  if (userData?.library?.favorites?.length > 0) {
-    // Добавляем карточки с любимой мангой пользователя
-    const favoriteCards = userData.library.favorites.slice(0, 5).map(manga => ({
-      color: '#060010',
-      title: manga.title,
-      description: manga.author,
-      label: 'Favorite Manga',
-      backgroundImage: manga.cover,
-      link: `/manga/${manga.id}`
-    }));
-    
-    return [...baseCards, ...favoriteCards];
-  }
 
   return baseCards;
 };
@@ -115,7 +90,8 @@ const ParticleCard = ({
   glowColor = DEFAULT_GLOW_COLOR,
   enableTilt = false,
   clickEffect = false,
-  enableMagnetism = false
+  enableMagnetism = false,
+  onClick
 }) => {
   const cardRef = useRef(null);
   const particlesRef = useRef([]);
@@ -337,6 +313,12 @@ const ParticleCard = ({
       ref={cardRef}
       className={`${className} particle-container`}
       style={{ ...style, position: 'relative', overflow: 'hidden' }}
+      onClick={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          onClick(e);
+        }
+      }}
     >
       {children}
     </div>
@@ -537,6 +519,7 @@ const MagicBento = ({
   clickEffect = true,
   enableMagnetism = true
 }) => {
+  const navigate = useNavigate();
   const gridRef = useRef(null);
   const isMobile = useMobileDetection();
   const { user, loading, signOut } = useAuth();
@@ -581,17 +564,27 @@ const MagicBento = ({
 
           // Обработчик клика для навигации
           const handleCardClick = () => {
+            console.log('Card clicked:', card.title, 'with link:', card.link);
             if (card.link) {
-              window.location.href = card.link;
+              console.log('Attempting to navigate to:', card.link);
+              navigate(card.link);
             }
           };
 
           // Ветка с ParticleCard (твой "enableStars")
           if (enableStars) {
+            const { key, ...restCardProps } = cardProps;
             return (
               <ParticleCard
-                {...cardProps}
-                onClick={handleCardClick}
+                key={key}
+                {...restCardProps}
+                onClick={() => {
+                  console.log('ParticleCard clicked:', card.title);
+                  if (card.link) {
+                    console.log('Navigating to:', card.link);
+                    navigate(card.link);
+                  }
+                }}
                 style={{
                   ...cardProps.style,
                   cursor: card.link ? 'pointer' : 'default'
@@ -662,7 +655,7 @@ const MagicBento = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  window.location.href = '/profile';
+                                  navigate('/profile');
                                 }}
                                 style={{
                                   padding: '8px 16px',
@@ -686,10 +679,30 @@ const MagicBento = ({
                   </>
                 ) : (
                   <>
-                    <div className="magic-bento-card__header">
+                    <div 
+                      className="magic-bento-card__header"
+                      onClick={() => {
+                        console.log('Clicked on card:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
                       <div className="magic-bento-card__label">{card.label}</div>
                     </div>
-                    <div className="magic-bento-card__content">
+                    <div 
+                      className="magic-bento-card__content"
+                      onClick={() => {
+                        console.log('Clicked on card content:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
                       <h2 className="magic-bento-card__title">{card.title}</h2>
                       <p className="magic-bento-card__description">{card.description}</p>
                     </div>
@@ -704,6 +717,12 @@ const MagicBento = ({
             <div
               key={index}
               {...cardProps}
+              style={{
+                ...cardProps.style,
+                cursor: card.link ? 'pointer' : 'default',
+                position: 'relative',
+                transition: 'transform 0.2s ease-in-out'
+              }}
               ref={el => {
                 if (!el) return;
 
@@ -763,6 +782,18 @@ const MagicBento = ({
                 };
 
                 const handleClick = e => {
+                  console.log('Card clicked (non-Particle):', card.title);
+                  // Сначала проверяем навигацию
+                  if (card.link) {
+                    console.log('Card has link:', card.link);
+                    console.log('Attempting to navigate to:', card.link);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(card.link);
+                    return;
+                  }
+
+                  // Затем эффект клика если он включен
                   if (!clickEffect || shouldDisableAnimations) return;
 
                   const rect = el.getBoundingClientRect();

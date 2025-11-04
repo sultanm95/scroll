@@ -17,7 +17,7 @@
   },
   {
     "id": "1758778622167",
-    "username": "ddd",
+    "username": "dsa",
     "email": "ss@ss",
     "password": "aaa",
     "avatar": "/uploads/avatar-1760811822460-478379284.gif",
@@ -30,7 +30,8 @@
       "planToRead": [],
       "dropped": []
     },
-    "avatarFrame": ""
+    "avatarFrame": "",
+    "mangaList": []
   },
   {
     "id": "1758779399380",
@@ -296,7 +297,7 @@
         }
       ]
     },
-    "avatarFrame":""
+    "avatarFrame": ""
   },
   {
     "id": "1760439103005",

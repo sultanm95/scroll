@@ -9,6 +9,9 @@ import SearchPage from "./pages/SearchPage";
 import ProfilePage from "./pages/ProfilePage";
 import MusicPage from "./pages/MusicPage";
 import MangaReader from "./pages/MangaReader";
+import { LibraryPage } from "./pages/LibraryPage";
+import { ReviewsPage } from "./pages/ReviewsPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import "./App.css";
 
 function App() {
@@ -26,6 +29,9 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/music" element={<MusicPage />} />
               <Route path="/reader/:mangaId/:chapter?" element={<MangaReader />} />
+              <Route path="/library" element={<LibraryPage />} />
+              <Route path="/reviews" element={<ReviewsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
         </div>
