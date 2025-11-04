@@ -1,0 +1,45 @@
+.header {
+  width: 100%;
+  background: var(--card);
+  position: static;
+  top: 0;
+  z-index: 1000;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  
+}
+.header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  padding-top: 20px;
+  padding-bottom: 0px;
+}
+
+
+.header-inner {
+  display: flex;
+  align-items: center; /* прижимает все элементы к нижней границе */
+  justify-content: space-between;
+  padding: 10px 20px;
+  padding-top: 20px; /* создаёт отступ сверху */
+}
+
+
+.left-section,
+.center-section,
+.right-section {
+  /* нужно чтобы они были по центру */
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.right-section {
+  margin-left: auto; /* 💥 гарантирует, что всё справа уйдёт в конец */
+}
+.center-section {
+  flex-grow: 1;
+  justify-content: center;
+}

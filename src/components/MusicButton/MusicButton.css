@@ -1,0 +1,36 @@
+.music-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  background-color: transparent;
+  border: none;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  padding-bottom: 12px;
+}
+.music-text {
+  font-family: Oswald;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.music-btn:hover {
+  background-color: var(--accent-hover);
+  color: white;
+    background: var(--hover);
+  color: var(--text);
+}
+
+.music-icon {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.2s ease;
+}
+
+.music-btn:hover .music-icon {
+  transform: scale(1.1);
+}

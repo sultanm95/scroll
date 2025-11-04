@@ -1,0 +1,118 @@
+.catalog-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.catalog-container h1 {
+  color: var(--accent);
+  margin-bottom: 24px;
+  font-size: 2rem;
+}
+
+/* Grid layout */
+.manga-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  min-height: 200px; /* Prevent layout shift during loading */
+  will-change: transform; /* Optimize animations */
+}
+
+.manga-grid > * {
+  backface-visibility: hidden; /* Prevent flickering during animations */
+  transform-style: preserve-3d;
+}
+
+/* Loading states */
+.loading-spinner,
+.pagination-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted, rgba(255,255,255,0.7));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid var(--muted);
+  border-bottom-color: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.pagination-loading {
+  padding: 20px;
+}
+
+.pagination-loading .loader {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+/* Error state */
+.catalog-error {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted, rgba(255,255,255,0.7));
+}
+
+.catalog-error h2 {
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.catalog-error button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Filters section - will be styled later */
+.catalog-filters {
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .catalog-container {
+    padding: 16px;
+  }
+
+  .manga-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .catalog-container h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .manga-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+}

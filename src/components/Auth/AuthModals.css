@@ -1,0 +1,196 @@
+/* ==== Общие стили ==== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(15, 15, 15, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-window {
+  background: var(--card);
+  border-radius: 16px;
+  width: 95%;
+  max-width: 420px;
+  padding: 28px 32px;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  animation: scaleIn 0.25s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==== Кнопка закрытия ==== */
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+  transform: rotate(90deg);
+}
+
+/* ==== Заголовок ==== */
+.modal-window h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+/* ==== Формы ==== */
+.modal-window form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.modal-window input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background-light);
+  color: var(--text);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.modal-window input:hover {
+  border-color: var(--accent-hover);
+}
+
+.modal-window input:focus {
+  border-color: var(--accent);
+  outline: none;
+  background: var(--background);
+}
+
+/* ==== Аватарки ==== */
+.avatar-chooser {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  background: var(--background-light);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.avatar-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  filter: grayscale(0.4);
+}
+
+.avatar-option:hover {
+  transform: scale(1.08);
+  filter: grayscale(0);
+  border-color: var(--accent-hover);
+}
+
+.avatar-option.selected {
+  border-color: var(--accent);
+  filter: grayscale(0);
+  box-shadow: 0 0 0 3px rgba(255, 76, 76, 0.25);
+}
+
+/* ==== Подсказка регистрации ==== */
+.register-requirements {
+  background: var(--background-light);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.register-requirements strong {
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.register-requirements ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.register-requirements li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* ==== Кнопка ==== */
+.btn.auth-btn {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.btn.auth-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 76, 76, 0.25);
+}
+
+.btn.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ==== Мелкие улучшения ==== */
+.modal-window::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-window::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}

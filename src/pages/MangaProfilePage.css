@@ -1,0 +1,124 @@
+.manga-profile-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.manga-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.read-button {
+  padding: 12px 30px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.read-button:hover {
+  background-color: var(--accent-color-hover);
+}
+
+.favorite-button, .list-button {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color);
+}
+
+.favorite-button:hover, .list-button:hover {
+  border-color: var(--accent-color);
+  background-color: rgba(255, 76, 76, 0.1);
+}
+
+.favorite-button.active {
+  border-color: var(--accent-color);
+  background-color: rgba(255, 76, 76, 0.1);
+}
+
+.heart-icon, .list-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Modal styles */
+.list-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.list-modal-content {
+  background-color: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list-modal h3 {
+  margin: 0 0 15px 0;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.status-button {
+  padding: 10px 15px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.status-button:hover {
+  border-color: var(--accent-color);
+  background-color: rgba(255, 76, 76, 0.1);
+}
+
+.status-button.active {
+  border-color: var(--accent-color);
+  background-color: rgba(255, 76, 76, 0.1);
+  color: var(--accent-color);
+}
+
+.close-button {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: var(--accent-color-hover);
+}

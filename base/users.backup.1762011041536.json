@@ -1,0 +1,381 @@
+[
+  {
+    "id": "1",
+    "username": "admin",
+    "email": "admin@mangasite.com",
+    "password": "admin123",
+    "isAdmin": true,
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=7",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758778622167",
+    "username": "ddd",
+    "email": "ss@ss",
+    "password": "aaa",
+    "avatar": "/uploads/avatar-1760811822460-478379284.gif",
+    "favorites": [],
+    "background": "/uploads/bg-1760811830375-25282255.gif",
+    "library": {
+      "favorites": [
+        {
+          "id": "14",
+          "title": "Хантер х Хантер",
+          "cover": "images/14/cover.jpg",
+          "author": "Ёсихиро Тогаси",
+          "addedDate": "2025-10-18T16:58:19.358Z"
+        },
+        {
+          "id": "1",
+          "title": "Ван пис",
+          "cover": "images/1/onepiece.jpg",
+          "author": "Эичиро Ода",
+          "addedDate": "2025-10-18T19:22:15.640Z"
+        },
+        {
+          "id": "2",
+          "title": "Naruto",
+          "cover": "images/2/cover.jpg",
+          "author": "Masashi Kishimoto",
+          "addedDate": "2025-10-21T11:17:12.239Z"
+        }
+      ],
+      "reading": [
+        {
+          "id": "7",
+          "title": "Berserk",
+          "cover": "images/7/berserk.jpg",
+          "author": "Kentaro Miura",
+          "addedDate": "2025-10-17T14:49:36.173Z",
+          "status": "reading"
+        },
+        {
+          "id": "14",
+          "title": "Хантер х Хантер",
+          "cover": "images/14/cover.jpg",
+          "author": "Ёсихиро Тогаси",
+          "addedDate": "2025-10-18T16:58:19.358Z"
+        },
+        {
+          "id": "2",
+          "title": "Unknown Title",
+          "cover": "",
+          "author": "Unknown Author",
+          "addedDate": "2025-10-21T11:22:16.409Z",
+          "status": "reading"
+        }
+      ],
+      "completed": [
+        {
+          "id": "1",
+          "title": "One Piece",
+          "cover": "images/1/onepiece.jpg",
+          "author": "Eichiro Oda",
+          "addedDate": "2025-10-20T21:23:35.579Z",
+          "status": "completed"
+        }
+      ],
+      "planToRead": [],
+      "dropped": [
+        {
+          "id": "31",
+          "title": "Воллейбол",
+          "cover": "images/31/cover.jpg",
+          "author": "Харуичи Фурудате",
+          "addedDate": "2025-10-20T21:26:38.337Z",
+          "status": "dropped"
+        }
+      ]
+    },
+    "avatarFrame": "/images/ramki/Attack_on_Titan.png"
+  },
+  {
+    "id": "1758779399380",
+    "username": "batyr",
+    "email": "batyrov@index.com",
+    "password": "1234",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758780040650",
+    "username": "a",
+    "email": "a@a",
+    "password": "a",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=3",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758780650220",
+    "username": "a1",
+    "email": "a@aa",
+    "password": "a",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758785990492",
+    "username": "aaa",
+    "email": "aa@aa",
+    "password": "ss",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758786970626",
+    "username": "s",
+    "email": "aaa@aa",
+    "password": "a",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758805276841",
+    "username": "yyyyy",
+    "email": "ablas@gmail.com",
+    "password": "234512345",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=1",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758888971227",
+    "username": "allin",
+    "email": "bayanka@gmail.com",
+    "password": "2126547Ab",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=5",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1758999765201",
+    "username": "odetta",
+    "email": "odetta@mlbb.com",
+    "password": "12345678",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=10",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1759228974354",
+    "username": "aaa1111",
+    "email": "aaa@aaa.com",
+    "password": "s112231323123",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=5",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1759822969038",
+    "username": "sas",
+    "email": "sas@sas.sas",
+    "password": "sasasasasasasasaas",
+    "avatar": "http://127.0.0.1:5500/images/logo.png",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1759833330785",
+    "username": "Talgat",
+    "email": "test@test.com",
+    "password": "123123123",
+    "avatar": "/uploads/avatar-1760015166933-150173964.png",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "/uploads/bg-1760015200684-8537156.jpg"
+  },
+  {
+    "id": "1759833525174",
+    "username": "sss",
+    "email": "sss@sss.com",
+    "password": "12345678",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": [],
+    "background": "images/onepiece/693/01.jpg"
+  },
+  {
+    "id": "1760107183635",
+    "username": "beka",
+    "email": "ulugbekergeshev5@gmail.com",
+    "password": "ulugbek2323",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": []
+  },
+  {
+    "id": "1760186296433",
+    "username": "Zinedin",
+    "email": "serazhsultan@gmail.com",
+    "password": "2734857Ss",
+    "avatar": "/uploads/avatar-1760186326938-547690065.png",
+    "background": "/uploads/bg-1760202846835-316281030.jpg",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": []
+  },
+  {
+    "id": "1760202088701",
+    "username": "Erl",
+    "email": "erl@mail.ru",
+    "password": "12341234",
+    "avatar": "/uploads/avatar-1760202314502-452729621.jpg",
+    "background": "/uploads/bg-1760202329137-715179204.jpg",
+    "mangaList": {
+      "reading": [],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "favorites": []
+  },
+  {
+    "id": "1760438886497",
+    "username": "NICE_ILYAAAA",
+    "email": "zonic_legend@5times.majorwinner",
+    "password": "NICERENE",
+    "avatar": "/uploads/avatar-1760439017399-32889668.jpg",
+    "background": "/uploads/bg-1760439034070-327667894.jpg",
+    "library": {
+      "favorites": [
+        {
+          "id": "1",
+          "title": "Ван пис",
+          "cover": "images/1/onepiece.jpg",
+          "author": "Эичиро Ода",
+          "addedDate": "2025-10-20T08:44:39.763Z"
+        }
+      ],
+      "reading": [],
+      "completed": [
+        {
+          "id": "1",
+          "title": "Unknown Title",
+          "cover": "",
+          "author": "Unknown Author",
+          "addedDate": "2025-10-20T08:44:37.690Z",
+          "status": "completed"
+        }
+      ],
+      "planToRead": [],
+      "dropped": [
+        {
+          "id": "26",
+          "title": "Unknown Title",
+          "cover": "",
+          "author": "Unknown Author",
+          "addedDate": "2025-10-20T08:44:55.055Z",
+          "status": "dropped"
+        }
+      ]
+    },
+    "avatarFrame": "/images/ramki/Attack_on_Titan.png"
+  },
+  {
+    "id": "1760439103005",
+    "username": "dany",
+    "email": "dany@gmail.com",
+    "password": "12345678",
+    "avatar": "/uploads/avatar-1760439143931-164312535.jpg",
+    "background": "/uploads/bg-1760439149581-502764103.jpg"
+  },
+  {
+    "id": "1760439196008",
+    "username": "nurs",
+    "email": "nurs@gmail.com",
+    "password": "nurs1234",
+    "avatar": "/uploads/avatar-1760439220551-278151504.jpg",
+    "background": "/uploads/bg-1760439226741-475414722.jpg"
+  }
+]

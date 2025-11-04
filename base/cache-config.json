@@ -1,0 +1,39 @@
+{
+    "version": 2,
+    "enabled": true,
+    "ttl": 600000,
+    "maxSize": 50,
+    "cacheControl": {
+        "default": {
+            "max-age": 600,
+            "public": true,
+            "must-revalidate": true
+        },
+        "images": {
+            "max-age": 7200,
+            "public": true,
+            "must-revalidate": true
+        },
+        "api": {
+            "max-age": 600,
+            "public": true,
+            "must-revalidate": true
+        }
+    },
+    "paths": {
+        "images": {
+            "ttl": 3600000,
+            "headers": {
+                "Cache-Control": "public, max-age=3600",
+                "Expires": "3600"
+            }
+        },
+        "api": {
+            "ttl": 300000,
+            "headers": {
+                "Cache-Control": "public, max-age=300",
+                "Expires": "300"
+            }
+        }
+    }
+}

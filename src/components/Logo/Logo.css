@@ -1,0 +1,15 @@
+.logo {
+  display: flex;
+  justify-content: center; /* по горизонтали */
+  align-items: center;     /* по вертикали */
+  padding-bottom: 17px;
+}
+
+.logo img {
+  width: 95px;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+.logo img:hover {
+}

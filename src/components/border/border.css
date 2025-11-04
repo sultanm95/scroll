@@ -1,0 +1,22 @@
+.border-line {
+  background-color: var(--border);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.border-line.vertical {
+  width: 1px;
+  height: 24px;
+  margin: 0 8px;
+}
+
+.border-line.horizontal {
+  height: 1px;
+  width: 100%;
+  margin: 8px 0;
+}
+
+/* Hover effect */
+.border-line:hover {
+  opacity: 1;
+}
