@@ -1,12 +1,6 @@
 .search-page {
   min-height: 100vh;
-  background: var(--background);
-}
-
-.search-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  background: transparent;
 }
 
 .search-header {

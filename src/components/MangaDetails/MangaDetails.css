@@ -1,6 +1,6 @@
 .manga-details-page {
   min-height: 100vh;
-  background: var(--background);
+  background: transparent;
   padding-top: 2rem;
 }
 
@@ -22,7 +22,7 @@
   left: 0;
   right: 0;
   height: 150px;
-  background: linear-gradient(to bottom, transparent, var(--background));
+  background:transparent;  
 }
 
 .banner-image {
@@ -48,6 +48,7 @@
   grid-template-columns: 300px 1fr;
   gap: 30px;
   margin-bottom: 40px;
+  color: transparent;
 }
 
 .manga-cover {
@@ -62,6 +63,7 @@
 
 .manga-info {
   color: var(--text);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .manga-info h1 {
