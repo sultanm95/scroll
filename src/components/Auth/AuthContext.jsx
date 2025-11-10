@@ -69,6 +69,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  // обновление данных пользователя
+  function updateUser(updatedData) {
+    if (!user) {
+      console.warn('updateUser: user is null, cannot update');
+      return;
+    }
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
+    localStorage.setItem("signedInUser", newUser.username);
+  }
+
   // проверка токена
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -84,6 +96,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const value = { user, loading, signIn, signOut, register };
+  const value = { user, loading, signIn, signOut, register, updateUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

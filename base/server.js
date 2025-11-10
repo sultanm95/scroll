@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import axios from 'axios';
 
 // Import local modules
 import { verifyToken } from './middleware/auth.js';
@@ -40,6 +41,202 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 const uploadsDir = path.join(baseDir, 'uploads');
+
+// ============ AniList GraphQL Helper Functions ============
+
+async function fetchMangasFromAniList(page = 1, perPage = 20, searchTerm = null) {
+  // Базовый запрос без фильтра staff(role: ...), так как AniList это не поддерживает
+  const baseQuery = `
+    query ($page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
+        media(type: MANGA, sort: POPULARITY_DESC) {
+          id
+          title {
+            romaji
+            english
+          }
+          coverImage {
+            large
+          }
+          description(asHtml: false)
+          genres
+          status
+          averageScore
+          chapters
+          volumes
+          startDate {
+            year
+            month
+            day
+          }
+        }
+      }
+    }
+  `;
+
+  const searchQuery = `
+    query ($page: Int, $perPage: Int, $search: String) {
+      Page(page: $page, perPage: $perPage) {
+        media(type: MANGA, sort: POPULARITY_DESC, search: $search) {
+          id
+          title {
+            romaji
+            english
+          }
+          coverImage {
+            large
+          }
+          description(asHtml: false)
+          genres
+          status
+          averageScore
+          chapters
+          volumes
+          startDate {
+            year
+            month
+            day
+          }
+        }
+      }
+    }
+  `;
+
+  const query = searchTerm ? searchQuery : baseQuery;
+  const variables = { page, perPage };
+  if (searchTerm) variables.search = searchTerm;
+
+  try {
+    console.log('📤 AniList Request - Variables:', JSON.stringify(variables));
+    
+    const response = await axios.post(
+      'https://graphql.anilist.co',
+      { query, variables },
+      { 
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
+      }
+    );
+
+    console.log('📥 AniList Response status:', response.status);
+
+    if (response.data.errors) {
+      console.error('❌ AniList GraphQL error:', JSON.stringify(response.data.errors, null, 2));
+      return [];
+    }
+
+    if (!response.data.data || !response.data.data.Page || !response.data.data.Page.media) {
+      console.warn('⚠️ Invalid response structure - data:', response.data.data);
+      return [];
+    }
+    
+    const media = response.data.data.Page.media;
+    console.log(`✅ Received ${media.length} mangas from AniList`);
+
+    // Форматируем в простые объекты
+    const mangas = response.data.data.Page.media.map(m => ({
+      id: m.id.toString(),
+      title: m.title.english || m.title.romaji || 'Unknown',
+      cover: m.coverImage.large,
+      description: m.description || '',
+      genres: m.genres || [],
+      status: m.status || 'UNKNOWN',
+      averageScore: m.averageScore || 0,
+      chapters: m.chapters || 0,
+      volumes: m.volumes || 0,
+      author: 'AniList', // Базовое значение (staff данные можно добавить позже отдельным запросом)
+      anilistId: m.id
+    }));
+
+    console.log('✏️ Parsed mangas:', mangas.length);
+    return mangas;
+  } catch (error) {
+    console.error('❌ AniList fetch error:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
+    return [];
+  }
+}
+
+async function fetchMangaFromAniList(id) {
+  const query = `
+    query ($id: Int) {
+      Media(id: $id, type: MANGA) {
+        id
+        title {
+          romaji
+          english
+        }
+        coverImage {
+          large
+        }
+        description(asHtml: false)
+        genres
+        status
+        averageScore
+        chapters
+        volumes
+        startDate {
+          year
+          month
+          day
+        }
+      }
+    }
+  `;
+
+  try {
+    console.log('📤 AniList Single Manga Request - ID:', id);
+    
+    const response = await axios.post(
+      'https://graphql.anilist.co',
+      { query, variables: { id: parseInt(id) } },
+      { 
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
+      }
+    );
+
+    if (response.data.errors) {
+      console.error('❌ AniList GraphQL error:', JSON.stringify(response.data.errors, null, 2));
+      return null;
+    }
+
+    const m = response.data.data.Media;
+    if (!m) {
+      console.warn('⚠️ Manga not found for ID:', id);
+      return null;
+    }
+
+    console.log('✅ Fetched manga:', m.title.english || m.title.romaji);
+
+    return {
+      id: m.id.toString(),
+      title: m.title.english || m.title.romaji || 'Unknown',
+      cover: m.coverImage.large,
+      description: m.description || '',
+      genres: m.genres || [],
+      status: m.status || 'UNKNOWN',
+      averageScore: m.averageScore || 0,
+      chapters: m.chapters || 0,
+      volumes: m.volumes || 0,
+      author: 'AniList',
+      anilistId: m.id,
+      startDate: m.startDate
+    };
+  } catch (error) {
+    console.error('❌ AniList fetch error:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
+    return null;
+  }
+}
+
+// ============ End of AniList Helpers ============
 
 // Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
@@ -162,11 +359,11 @@ app.get('/api/users/:userId/library', verifyToken, (req, res) => {
 });
 
 // Add/remove manga from user's list
-app.post('/api/users/:userId/list', verifyToken, (req, res) => {
+app.post('/api/users/:userId/list', verifyToken, async (req, res) => {
   const { userId } = req.params;
   const { mangaId, status, manga } = req.body;
   
-  if (!mangaId || !status || !manga) {
+  if (!mangaId || !status) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -188,15 +385,24 @@ app.post('/api/users/:userId/list', verifyToken, (req, res) => {
     };
   }
 
+  // Get manga details from AniList if not provided
+  let mangaData = manga;
+  if (!mangaData) {
+    mangaData = await fetchMangaFromAniList(mangaId);
+    if (!mangaData) {
+      return res.status(404).json({ error: 'Manga not found on AniList' });
+    }
+  }
+
   // Remove manga from all lists first
   ['reading', 'completed', 'planToRead', 'dropped'].forEach(listType => {
     user.library[listType] = user.library[listType].filter(m => m.id !== mangaId);
   });
 
   // Add manga to the specified list
-  manga.addedDate = new Date().toISOString();
-  manga.status = status;
-  user.library[status].push(manga);
+  mangaData.addedDate = new Date().toISOString();
+  mangaData.status = status;
+  user.library[status].push(mangaData);
 
   writeJSON(usersFile, users);
   res.json({ added: true, status });
@@ -346,7 +552,7 @@ app.post('/api/user/avatar', (req, res) => {
 
   user.avatar = avatar;
   writeJSON(usersFile, users);
-  res.json({ success: true });
+  res.json({ success: true, avatar: avatar });
 });
 
 // Upload custom background
@@ -421,13 +627,24 @@ app.post('/api/user/background', (req, res) => {
 
   user.background = background;
   writeJSON(usersFile, users);
-  res.json({ success: true });
+  res.json({ success: true, background: background });
 });
 
 // Manga endpoints
-app.get('/api/mangas', (req, res) => {
-  const mangas = readJSON(mangasFile);
-  res.json(mangas);
+app.get('/api/mangas', async (req, res) => {
+  console.log('GET /api/mangas called');
+  const page = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 20;
+
+  try {
+    console.log('Fetching from AniList...');
+    const mangas = await fetchMangasFromAniList(page, perPage);
+    console.log('Got mangas:', mangas.length);
+    res.json(mangas);
+  } catch (error) {
+    console.error('Error fetching mangas:', error);
+    res.status(500).json({ error: 'Failed to fetch mangas' });
+  }
 });
 
 // Get manga status for user
@@ -473,9 +690,8 @@ app.post('/api/manga/:id/favorite', verifyToken, async (req, res) => {
     };
   }
 
-  // Get manga details
-  const mangas = readJSON(mangasFile);
-  const manga = mangas.find(m => m.id === id);
+  // Get manga details from AniList
+  const manga = await fetchMangaFromAniList(id);
   if (!manga) {
     return res.status(404).json({ error: 'Manga not found' });
   }
@@ -490,6 +706,7 @@ app.post('/api/manga/:id/favorite', verifyToken, async (req, res) => {
       title: manga.title,
       cover: manga.cover,
       author: manga.author,
+      anilistId: manga.anilistId,
       addedDate: new Date().toISOString()
     };
     user.library.favorites.push(mangaData);
@@ -521,9 +738,8 @@ app.post('/api/manga/:id/status', verifyToken, async (req, res) => {
     };
   }
 
-  // Get manga details
-  const mangas = readJSON(mangasFile);
-  const manga = mangas.find(m => m.id === id);
+  // Get manga details from AniList
+  const manga = await fetchMangaFromAniList(id);
   if (!manga) {
     return res.status(404).json({ error: 'Manga not found' });
   }
@@ -540,6 +756,7 @@ app.post('/api/manga/:id/status', verifyToken, async (req, res) => {
       title: manga.title,
       cover: manga.cover,
       author: manga.author,
+      anilistId: manga.anilistId,
       addedDate: new Date().toISOString(),
       status: status
     };
@@ -552,58 +769,34 @@ app.post('/api/manga/:id/status', verifyToken, async (req, res) => {
 
 // Get individual manga by ID
 app.get('/api/manga/:id', async (req, res) => {
-  const mangas = readJSON(mangasFile);
-  const manga = mangas.find(m => m.id === req.params.id);
-  if (!manga) {
-    return res.status(404).json({ error: 'Manga not found' });
-  }
-  
   try {
-    // Get chapters from filesystem
-    const chaptersPath = path.join(__dirname, 'manga-chapters.json');
-    if (fs.existsSync(chaptersPath)) {
-      const chaptersDb = JSON.parse(fs.readFileSync(chaptersPath, 'utf-8'));
-      if (chaptersDb.chapters && chaptersDb.chapters[manga.id]) {
-        manga.chapters = chaptersDb.chapters[manga.id];
-      }
+    const manga = await fetchMangaFromAniList(req.params.id);
+    
+    if (!manga) {
+      return res.status(404).json({ error: 'Manga not found' });
     }
     
-    // If no cached chapters found, scan the filesystem
-    if (!manga.chapters) {
-      const structure = await scanMangaChapters(manga.id.toString());
-      manga.chapters = structure.chapters;
-      manga.chapterCount = structure.chapterCount;
+    // Get chapters from filesystem if available
+    try {
+      const chaptersPath = path.join(__dirname, 'manga-chapters.json');
+      if (fs.existsSync(chaptersPath)) {
+        const chaptersDb = JSON.parse(fs.readFileSync(chaptersPath, 'utf-8'));
+        if (chaptersDb.chapters && chaptersDb.chapters[req.params.id]) {
+          manga.chapters = chaptersDb.chapters[req.params.id];
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load local chapters:', err.message);
     }
     
     res.json(manga);
   } catch (error) {
-    console.error('Error getting manga chapters:', error);
-    res.status(500).json({
-      error: 'Failed to get manga chapters',
-      details: error.message
-    });
+    console.error('Error getting manga:', error);
+    res.status(500).json({ error: 'Failed to get manga' });
   }
 });
 
-// Update manga endpoint
-app.put('/api/manga/:id', (req, res) => {
-  const mangas = readJSON(mangasFile);
-  const manga = mangas.find(m => m.id === req.params.id);
-  if (!manga) {
-    return res.status(404).json({ error: 'Manga not found' });
-  }
-  
-  const updates = req.body;
-  // Prevent changing the ID
-  delete updates.id;
-  
-  // Update manga properties
-  Object.assign(manga, updates);
-  
-  // Save changes
-  writeJSON(mangasFile, mangas);
-  res.json(manga);
-});
+// ============ AniList is read-only, no manual updates ============
 
 // These imports are already at the top of the file
 
@@ -659,31 +852,24 @@ app.get('/api/manga/:id/chapter/:chapterNum', async (req, res) => {
   }
 });
 
-// Enhanced search endpoint: /api/search?q=term&type=title|author|genre
-app.get('/api/search', (req, res) => {
+// Enhanced search endpoint: /api/search?q=term
+app.get('/api/search', async (req, res) => {
   const q = req.query.q || '';
-  const type = (req.query.type || 'title').toLowerCase();
-  const mangas = readJSON(mangasFile);
   
-  const results = searchManga(q, type, mangas);
-  res.json(results);
+  if (!q || q.length < 2) {
+    return res.json([]);
+  }
+
+  try {
+    const results = await fetchMangasFromAniList(1, 15, q);
+    res.json(results);
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
 });
 
-app.post('/api/mangas', (req, res) => {
-  const mangas = readJSON(mangasFile);
-  const manga = req.body;
-  manga.id = Date.now().toString();
-  mangas.push(manga);
-  writeJSON(mangasFile, mangas);
-  res.status(201).json(manga);
-});
-
-app.delete('/api/mangas/:id', (req, res) => {
-  let mangas = readJSON(mangasFile);
-  mangas = mangas.filter(m => m.id !== req.params.id);
-  writeJSON(mangasFile, mangas);
-  res.json({ success: true });
-});
+// ============ AniList is read-only, no create/delete for mangas ============
 
 // User endpoints
 app.post('/api/register', (req, res) => {
@@ -1126,8 +1312,13 @@ app.post('/api/user/avatar-frame', (req, res) => {
 });
 
 // Start the server
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Server is ready to accept connections');
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err);
 });
 
 // --- Optional AI proxy endpoint (requires OPENAI_API_KEY) ---

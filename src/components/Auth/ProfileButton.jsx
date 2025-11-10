@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import AuthModals from "./AuthModals";
 import { useNavigate } from "react-router-dom"; // ✅ импортируем навигацию
@@ -8,7 +8,29 @@ export function ProfileButton() {
   const { user, signOut } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("signin");
+  const [forceUpdate, setForceUpdate] = useState(0);
   const navigate = useNavigate(); // ✅ создаём хук
+
+  useEffect(() => {
+    // Слушаем события обновления аватара и фона
+    const handleAvatarUpdate = () => {
+      console.log('Avatar updated event received');
+      setForceUpdate(prev => prev + 1);
+    };
+    
+    const handleBackgroundUpdate = () => {
+      console.log('Background updated event received');
+      setForceUpdate(prev => prev + 1);
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    window.addEventListener('backgroundUpdated', handleBackgroundUpdate);
+
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('backgroundUpdated', handleBackgroundUpdate);
+    };
+  }, []);
 
   const handleSignInClick = () => {
     setModalMode("signin");

@@ -1,7 +1,10 @@
 .catalog-container {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .catalog-container h1 {
@@ -16,8 +19,9 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   margin-top: 20px;
-  min-height: 200px; /* Prevent layout shift during loading */
-  will-change: transform; /* Optimize animations */
+  min-height: 400px;
+  flex: 1;
+  will-change: transform;
 }
 
 .manga-grid > * {
@@ -111,6 +115,10 @@
 }
 
 @media (max-width: 480px) {
+  .catalog-container {
+    padding: 12px;
+  }
+
   .manga-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;

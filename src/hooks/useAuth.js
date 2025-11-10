@@ -69,11 +69,19 @@ export const useAuth = () => {
     }
   };
 
+  const updateUser = (updatedData) => {
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem('signedInUser', newUser.username);
+  };
+
   return {
     isAuthenticated,
     user,
     loading,
     checkAuthState,
-    signOut
+    signOut,
+    updateUser
   };
 };

@@ -4,7 +4,7 @@ import MangaCard from '../MangaCard/MangaCard';
 import Pagination from '../ui/Pagination';
 import './Catalog.css';
 
-const ITEMS_PER_PAGE = 25;
+const ITEMS_PER_PAGE = 48;
 
 function Catalog() {
   const [manga, setManga] = useState([]);

@@ -17,12 +17,12 @@
   },
   {
     "id": "1758778622167",
-    "username": "dsa",
+    "username": "ddd",
     "email": "ss@ss",
     "password": "aaa",
-    "avatar": "/uploads/avatar-1760811822460-478379284.gif",
+    "avatar": "/uploads/avatar-1762810382405-526998734.png",
     "favorites": [],
-    "background": "/uploads/bg-1760811830375-25282255.gif",
+    "background": "http://localhost:3001/images/onepiece/693/01.jpg",
     "library": {
       "favorites": [],
       "reading": [],
@@ -30,8 +30,8 @@
       "planToRead": [],
       "dropped": []
     },
-    "avatarFrame": "",
-    "mangaList": []
+    "mangaList": [],
+    "avatarFrame": ""
   },
   {
     "id": "1758779399380",
