@@ -54,6 +54,10 @@
 
 .profile-avatar {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .avatar-large {

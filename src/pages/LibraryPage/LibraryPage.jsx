@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from "../../hooks/useAuth";
 import './LibraryPage.css';
 
 const LIBRARY_TABS = {

@@ -2,7 +2,8 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { gsap } from 'gsap';
 import { useAuth } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import './MagicBento.css';
+import AlbumCoverPlayer from '../ui/MusicDisc/MusicDisk';
+import './MagicBentoMusic.css';
 
 const DEFAULT_PARTICLE_COUNT = 20;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
@@ -19,7 +20,7 @@ const generateDefaultCardData = (userData) => {
       label: 'Profile',
       avatar: '',
       backgroundImage: '',
-      link: '/profile'
+      link: '/settings'
     },
     {
       color: '#060010',
@@ -458,7 +459,7 @@ const GlobalSpotlight = ({
 };
 
 const BentoCardGrid = ({ children, gridRef }) => (
-  <div className="card-grid bento-section" ref={gridRef}>
+  <div className="card-grid music-grid bento-section" ref={gridRef}>
     {children}
   </div>
 );
@@ -479,34 +480,23 @@ const useMobileDetection = () => {
 };
 
 const buildCardData = (userData) => {
-  const defaultAvatar = 'https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4';
-  const defaultBackground = 'images/onepiece/693/01.jpg';
+  const defaultMusicCover = 'https://images.genius.com/f2c0421ef6dbcd06eb568d9937b40eac.1000x1000x1.png';
 
-  // Обработка путей изображений
-  const processImagePath = (path) => {
-    if (!path) return null;
-    // Если путь начинается с http или https, оставляем как есть
-    if (path.startsWith('http')) return path;
-    // Для относительных путей добавляем базовый URL
-    return `http://localhost:3001${path}`;
-  };
-
-  const profileCard = {
+  // Первая карточка - текущий трек
+  const musicCard = {
     color: '#060010',
-    title: userData?.username || 'Anonymous',
-    description: userData?.email || 'No email provided',
-    label: 'Profile',
-    avatar: processImagePath(userData?.avatar) || defaultAvatar,
-    backgroundImage: processImagePath(userData?.background) || processImagePath(userData?.avatar) || defaultBackground,
-    avatarFrame: processImagePath(userData?.avatarFrame) || '',
-    link: '/profile'
+    title: 'Binks Sake',
+    description: 'One Piece',
+    label: 'Now Playing',
+    cover: defaultMusicCover,
+    link: '/music'
   };
 
   const defaultCards = generateDefaultCardData(userData);
-  return [profileCard, ...defaultCards.slice(1)];
+  return [musicCard, ...defaultCards];
 };
 
-const MagicBento = ({
+const MagicBentoMusic = ({
   textAutoHide = true,
   enableStars = true,
   enableSpotlight = true,
@@ -599,36 +589,26 @@ const MagicBento = ({
                 {index === 0 ? (
                   <>
                     <div 
-                      className="profile-background" 
+                      className="music-card-background" 
                       style={{ 
-                        backgroundImage: `url(${card.backgroundImage})`,
+                        backgroundImage: `url(${card.cover})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
-                        opacity: card.backgroundImage ? 1 : 0.5
+                        opacity: 0.3
                       }} 
                     />
-                    <div className="profile-content">
-                      <div className="profile-avatar">
-                        <img src={card.avatar} alt={card.title} />
-                        {card.avatarFrame && (
-                            <img 
-                            src={card.avatarFrame} 
-                            alt=""
-                            className="avatar-frame"
-                            style={{
-                              position: 'absolute',
-                              top: '-10%',
-                              left: '-10%',
-                              width: '120%',
-                              height: '120%',
-                              pointerEvents: 'none'
-                            }}
-                          />
-                        )}
-                      </div>
-                      <div className="profile-text">
-                        <h2 className="profile-username">{card.title}</h2>
+                    <div className="music-card-container">
+                      <AlbumCoverPlayer 
+                        size={100}
+                        spinning={true}
+                        speed={8}
+                        title={card.title}
+                        coverUrl={card.cover}
+                      />
+                      <div className="music-card-info">
+                        <h2 className="music-card-title">{card.title}</h2>
+                        <p className="music-card-artist">{card.description}</p>
                       </div>
                     </div>
                   </>
@@ -810,4 +790,4 @@ const MagicBento = ({
   );
 };
 
-export default MagicBento;
+export default MagicBentoMusic;

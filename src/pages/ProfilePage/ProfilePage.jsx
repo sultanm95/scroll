@@ -1,8 +1,8 @@
 import React from "react";
-import { useAuth } from "../components/Auth/AuthContext";
+import { useAuth } from "../../components/Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
-import MagicBento from "../components/MagicBento/MagicBento";
+import MagicBento from "../../components/MagicBento/MagicBento";
 
 function ProfilePage() {
   const { user, signOut } = useAuth();

@@ -1,10 +1,10 @@
 import React from "react";
 import "./MusicPage.css"; // создадим позже при необходимости
+import MagicBentoMusic from "../../components/MagicBento/MagicBentoMusic";
 function MusicPage() {
   return (
     <div className="music-page">
-      <h1>Музыка</h1>
-      <p>Здесь будет музыкальный контент.</p>
+      <MagicBentoMusic />
     </div>
   );
 }

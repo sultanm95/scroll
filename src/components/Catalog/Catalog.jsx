@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
-import MangaCard from '../MangaCard/MangaCard';
+import MangaCard from "../MangaDetails/MangaCard/MangaCard";
 import Pagination from '../ui/Pagination';
 import './Catalog.css';
 

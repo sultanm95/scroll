@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { gsap } from 'gsap';
-import MangaCard from '../components/MangaCard/MangaCard';
-import Header from '../components/Header/Header';
-import Pagination from '../components/ui/Pagination';
+import MangaCard from "../../components/MangaDetails/MangaCard/MangaCard";
+import Header from "../../components/Header/Header";
+import Pagination from "../../components/ui/Pagination";
 import './SearchPage.css';
 
 const ITEMS_PER_PAGE = 25;

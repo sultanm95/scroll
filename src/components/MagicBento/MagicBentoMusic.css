@@ -11,8 +11,22 @@
   --card-radius: 20px;
 }
 
+/* Анимация вращения */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 10s linear infinite;
+}
+
 /* Base grid */
-.card-grid {
+.card-grid.music-grid {
   display: grid;
   gap: 0.75em;
   padding: 0.75em;
@@ -25,58 +39,59 @@
 
 /* Mobile: single column */
 @media (max-width: 1023px) {
-  .card-grid {
+  .card-grid.music-grid {
     grid-template-columns: 1fr;
   }
 }
 
 /* Tablet: 2 columns */
 @media (min-width: 600px) and (max-width: 1023px) {
-  .card-grid {
+  .card-grid.music-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 /* Desktop: 4 columns layout (we place items explicitly) */
 @media (min-width: 1024px) {
-  .card-grid {
+  .card-grid.music-grid {
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: minmax(120px, auto);
     gap: 1rem;
   }
 
   /* Profile (1st card) - 2x1 верхний левый */
-  .magic-bento-card:nth-child(1) {
+  .card-grid.music-grid .magic-bento-card:nth-child(1) {
     grid-column: 1 / 3;
     grid-row: 1;
-    aspect-ratio: 2/1;
+    aspect-ratio: 2/0.72;
   }
 
   /* Automation (2nd card) - 2x2 нижний левый */
-  .magic-bento-card:nth-child(2) {
+  .card-grid.music-grid .magic-bento-card:nth-child(2) {
     grid-column: 1 / 3;
     grid-row: 2 / 4;
     aspect-ratio: 2/2;
   }
 
   /* Teamwork (3rd card) - 2x2 верхний правый */
-  .magic-bento-card:nth-child(3) {
+  .card-grid.music-grid .magic-bento-card:nth-child(3) {
     grid-column: 3 / 5;
     grid-row: 1 / 3;
     aspect-ratio: 2/2;
   }
 
   /* Security (6th card) - 2x1 нижний правый */
-  .magic-bento-card:nth-child(4) {
+  .card-grid.music-grid .magic-bento-card:nth-child(4) {
     grid-column: 3 / 5;
     grid-row: 3;
-    aspect-ratio: 2/1;
+    aspect-ratio: 2/0.72;
   }
 
 }
 
-/* Profile Card Styles */
-.profile-background {
+
+/* Music Card Styles */
+.music-card-background {
   position: absolute;
   top: 0;
   left: 0;
@@ -89,52 +104,47 @@
   z-index: 0;
 }
 
-.profile-content {
+.music-card-container {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: left;
+  align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem;
   height: 100%;
   width: 100%;
 }
 
-.profile-avatar {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-text {
+.music-card-info {
+  text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.profile-username {
+.music-card-title {
   font-family: 'Dosis', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  padding-left: 25px;
   color: white;
-  text-transform: uppercase;
-  letter-spacing: 2px;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.music-card-artist {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
 }
 
 

@@ -1,5 +1,5 @@
   import React, { useState, useEffect, useRef } from 'react';
-  import MangaCard from '../MangaCard/MangaCard';
+  import MangaCard from "../MangaCard/MangaCard";
   import './PopularMangaSlider.css';
 
 function PopularMangaSlider({ title = "Популярная манга" }) {

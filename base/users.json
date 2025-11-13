@@ -20,9 +20,9 @@
     "username": "ddd",
     "email": "ss@ss",
     "password": "aaa",
-    "avatar": "/uploads/avatar-1762810382405-526998734.png",
+    "avatar": "/uploads/avatar-1762858265707-824468280.gif",
     "favorites": [],
-    "background": "http://localhost:3001/images/onepiece/693/01.jpg",
+    "background": "/uploads/bg-1762858274139-506479507.gif",
     "library": {
       "favorites": [],
       "reading": [],
