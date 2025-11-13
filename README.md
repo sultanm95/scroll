@@ -1,16 +1,121 @@
-# React + Vite
+# Scroll - Manga Reader App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение для просмотра манги с интеграцией AniList и MangaDex API.
 
-Currently, two official plugins are available:
+## 📋 Требования
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (версия 14+)
+- npm или yarn
+- Redis (опционально, для кэширования)
 
-## React Compiler
+## 🚀 Установка и запуск
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Скачайте зависимости
 
-## Expanding the ESLint configuration
+```bash
+npm install
+cd base
+npm install
+cd ..
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Запустите приложение
+
+**Вариант 1: Через batch-файл (Windows)**
+```bash
+start-server.bat
+```
+
+**Вариант 2: Вручную через терминал**
+
+Откройте **2 терминала**:
+
+**Терминал 1 (Backend)**:
+```bash
+cd base
+node server.js
+```
+Сервер будет запущен на `http://localhost:3001`
+
+**Терминал 2 (Frontend)**:
+```bash
+npm run dev
+```
+Приложение будет доступно на `http://localhost:5173`
+
+### 3. Откройте в браузере
+
+Перейдите на `http://localhost:5173`
+
+## 📁 Структура проекта
+
+```
+home/
+├── src/                      # Frontend (React)
+│   ├── App/                  # Главное приложение
+│   ├── pages/                # Страницы (Search, Profile, Music, Library, etc.)
+│   ├── components/           # React компоненты
+│   └── api/                  # API интеграции
+├── base/                     # Backend (Express)
+│   ├── server.js             # Основной сервер
+│   ├── routes/               # API маршруты
+│   └── utils/                # Утилиты
+├── package.json              # Frontend зависимости
+└── vite.config.js            # Vite конфигурация
+```
+
+## ✨ Основные функции
+
+- 🔍 **Поиск манги** через AniList и MangaDex
+- 👤 **Профиль пользователя** с настройками аватара и фона
+- 📚 **Библиотека** (избранное, читаю, завершено, планирую, брошено)
+- 🎵 **Музыкальный плеер** с вращающимся диском
+- 📖 **Читалка манги** с постраничной навигацией
+- ⭐ **Отзывы и рейтинги**
+
+## ⚙️ Переменные окружения (опционально)
+
+Создайте `.env` файл в корне проекта:
+
+```
+VITE_API_URL=http://localhost:3001
+```
+
+## 🔧 Доступные команды
+
+```bash
+npm run dev      # Запуск dev сервера Vite
+npm run build    # Сборка для production
+npm run preview  # Просмотр production сборки
+npm run lint     # Проверка кода ESLint
+```
+
+## 📦 Технологии
+
+- **Frontend**: React 18, Vite, React Router, Framer Motion, GSAP
+- **Backend**: Express.js, GraphQL (AniList), REST (MangaDex)
+- **Стили**: CSS, Tailwind CSS
+- **БД**: JSON (файловое хранилище)
+
+## 🛑 Остановка сервера
+
+**Windows:**
+```bash
+base\stop-server.bat
+```
+
+**Linux/Mac:**
+```bash
+cd base
+pm2 stop all
+```
+
+## 📝 Заметки
+
+- Первый запуск может занять время при загрузке данных с AniList
+- Убедитесь, что порты 3001 (backend) и 5173 (frontend) свободны
+- Для использования Redis раскомментируйте в `base/redis-client.js`
+
+---
+
+**Приложение готово к использованию!** 🎉
