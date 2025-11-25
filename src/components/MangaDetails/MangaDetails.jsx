@@ -196,7 +196,7 @@ function MangaDetails() {
               dangerouslySetInnerHTML={{ __html: manga.description }} 
             />
 
-            <MangaActionButtons mangaId={manga.id} />
+            <MangaActionButtons mangaId={manga.id} mangaData={manga} />
             
             <button 
               className="read-manga-button"

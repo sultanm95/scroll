@@ -6,14 +6,13 @@
     "password": "admin123",
     "isAdmin": true,
     "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=7",
-    "mangaList": {
+    "library": {
+      "favorites": [],
       "reading": [],
       "completed": [],
       "planToRead": [],
       "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
+    }
   },
   {
     "id": "1758778622167",
@@ -21,314 +20,124 @@
     "email": "ss@ss",
     "password": "aaa",
     "avatar": "/uploads/avatar-1762858265707-824468280.gif",
-    "favorites": [],
     "background": "/uploads/bg-1762858274139-506479507.gif",
-    "library": {
-      "favorites": [],
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "mangaList": [],
-    "avatarFrame": ""
-  },
-  {
-    "id": "1758779399380",
-    "username": "batyr",
-    "email": "batyrov@index.com",
-    "password": "1234",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758780040650",
-    "username": "a",
-    "email": "a@a",
-    "password": "a",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=3",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758780650220",
-    "username": "a1",
-    "email": "a@aa",
-    "password": "a",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758785990492",
-    "username": "aaa",
-    "email": "aa@aa",
-    "password": "ss",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758786970626",
-    "username": "s",
-    "email": "aaa@aa",
-    "password": "a",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758805276841",
-    "username": "yyyyy",
-    "email": "ablas@gmail.com",
-    "password": "234512345",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=1",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758888971227",
-    "username": "allin",
-    "email": "bayanka@gmail.com",
-    "password": "2126547Ab",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=5",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1758999765201",
-    "username": "odetta",
-    "email": "odetta@mlbb.com",
-    "password": "12345678",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=10",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1759228974354",
-    "username": "aaa1111",
-    "email": "aaa@aaa.com",
-    "password": "s112231323123",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=5",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1759822969038",
-    "username": "sas",
-    "email": "sas@sas.sas",
-    "password": "sasasasasasasasaas",
-    "avatar": "http://127.0.0.1:5500/images/logo.png",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1759833330785",
-    "username": "Talgat",
-    "email": "test@test.com",
-    "password": "123123123",
-    "avatar": "/uploads/avatar-1760015166933-150173964.png",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "/uploads/bg-1760015200684-8537156.jpg"
-  },
-  {
-    "id": "1759833525174",
-    "username": "sss",
-    "email": "sss@sss.com",
-    "password": "12345678",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": [],
-    "background": "images/onepiece/693/01.jpg"
-  },
-  {
-    "id": "1760107183635",
-    "username": "beka",
-    "email": "ulugbekergeshev5@gmail.com",
-    "password": "ulugbek2323",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": []
-  },
-  {
-    "id": "1760186296433",
-    "username": "Zinedin",
-    "email": "serazhsultan@gmail.com",
-    "password": "2734857Ss",
-    "avatar": "/uploads/avatar-1760186326938-547690065.png",
-    "background": "/uploads/bg-1760202846835-316281030.jpg",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": []
-  },
-  {
-    "id": "1760202088701",
-    "username": "Erl",
-    "email": "erl@mail.ru",
-    "password": "12341234",
-    "avatar": "/uploads/avatar-1760202314502-452729621.jpg",
-    "background": "/uploads/bg-1760202329137-715179204.jpg",
-    "mangaList": {
-      "reading": [],
-      "completed": [],
-      "planToRead": [],
-      "dropped": []
-    },
-    "favorites": []
-  },
-  {
-    "id": "1760438886497",
-    "username": "NICE_ILYAAAA",
-    "email": "zonic_legend@5times.majorwinner",
-    "password": "NICERENE",
-    "avatar": "/uploads/avatar-1760439017399-32889668.jpg",
-    "background": "/uploads/bg-1760439034070-327667894.jpg",
     "library": {
       "favorites": [
         {
-          "id": "1",
-          "title": "Ван пис",
-          "cover": "images/1/onepiece.jpg",
-          "author": "Эичиро Ода",
-          "addedDate": "2025-10-20T08:44:39.763Z"
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-21T10:54:32.223Z"
+        },
+        {
+          "id": 105398,
+          "title": {
+            "english": "Solo Leveling",
+            "romaji": "Na Honjaman Level Up",
+            "native": "나 혼자만 레벨업"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105398-b673Vt5ZSuz3.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105398-b673Vt5ZSuz3.jpg"
+          },
+          "addedDate": "2025-11-24T08:09:55.300Z"
         }
       ],
       "reading": [],
-      "completed": [
+      "completed": [],
+      "planToRead": [
         {
-          "id": "1",
-          "title": "Unknown Title",
-          "cover": "",
-          "author": "Unknown Author",
-          "addedDate": "2025-10-20T08:44:37.690Z",
-          "status": "completed"
+          "id": 105398,
+          "title": {
+            "english": "Solo Leveling",
+            "romaji": "Na Honjaman Level Up",
+            "native": "나 혼자만 레벨업"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105398-b673Vt5ZSuz3.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105398-b673Vt5ZSuz3.jpg"
+          },
+          "addedDate": "2025-11-24T08:09:53.954Z",
+          "status": "planToRead"
+        },
+        {
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-24T08:13:44.311Z",
+          "status": "planToRead"
         }
       ],
-      "planToRead": [],
-      "dropped": [
-        {
-          "id": "26",
-          "title": "Unknown Title",
-          "cover": "",
-          "author": "Unknown Author",
-          "addedDate": "2025-10-20T08:44:55.055Z",
-          "status": "dropped"
-        }
-      ]
+      "dropped": []
     },
     "avatarFrame": ""
   },
   {
-    "id": "1760439103005",
-    "username": "dany",
-    "email": "dany@gmail.com",
-    "password": "12345678",
-    "avatar": "/uploads/avatar-1760439143931-164312535.jpg",
-    "background": "/uploads/bg-1760439149581-502764103.jpg"
+    "id": "1764061162132",
+    "username": "karma",
+    "email": "farmer@karmy.com",
+    "password": "12344321",
+    "avatar": "/uploads/avatar-1764061189950-210317930.jpg",
+    "background": "/uploads/bg-1764061204662-986318193.gif",
+    "library": {
+      "favorites": [
+        {
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-25T09:00:39.041Z"
+        }
+      ],
+      "reading": [
+        {
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-25T09:00:40.762Z",
+          "status": "reading"
+        }
+      ],
+      "completed": [],
+      "planToRead": [],
+      "dropped": []
+    },
+    "avatarFrame": ""
   },
   {
-    "id": "1760439196008",
-    "username": "nurs",
-    "email": "nurs@gmail.com",
-    "password": "nurs1234",
-    "avatar": "/uploads/avatar-1760439220551-278151504.jpg",
-    "background": "/uploads/bg-1760439226741-475414722.jpg"
-  },
-  {
-    "id": "1762069866146",
-    "username": "ddslaldlad",
-    "email": "sae@kac.ad",
-    "password": "aaaaaaaaaaa",
-    "avatar": ""
-  },
-  {
-    "id": "1762085896443",
-    "username": "asd",
-    "email": "asd@asd.com",
-    "password": "asdasdasd",
-    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=4",
-    "background": "/bg.jpg",
+    "id": "1764062717057",
+    "username": "naruto",
+    "email": "naruto@naruto.naruto",
+    "password": "narutonaruto",
+    "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=1",
+    "background": "images/onepiece/693/01.jpg",
     "library": {
       "favorites": [],
       "reading": [],

@@ -33,12 +33,29 @@ const usersFile = path.join(baseDir, 'users.json');
 
 // Helper functions
 function readJSON(file) {
-  if (!fs.existsSync(file)) return [];
-  return JSON.parse(fs.readFileSync(file, 'utf-8'));
+  try {
+    if (!fs.existsSync(file)) {
+      console.log(`[readJSON] File does not exist: ${file}, returning empty array`);
+      return [];
+    }
+    const content = fs.readFileSync(file, 'utf-8');
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error(`[readJSON] Error reading ${file}:`, error.message);
+    return [];
+  }
 }
 
 function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  try {
+    const content = JSON.stringify(data, null, 2);
+    fs.writeFileSync(file, content, 'utf-8');
+    console.log(`[writeJSON] Successfully wrote to ${file}`);
+  } catch (error) {
+    console.error(`[writeJSON] Error writing to ${file}:`, error.message);
+    throw error;
+  }
 }
 const uploadsDir = path.join(baseDir, 'uploads');
 
@@ -335,119 +352,169 @@ app.use((err, req, res, next) => {
 });
 
 // Get user's manga lists and favorites
+// Public endpoint to get user's library (no auth required)
+app.get('/api/users/:id/library', async (req, res) => {
+  try {
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.id == req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user.library || {});
+  } catch (error) {
+    console.error('Error loading local library:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.get('/api/users/:userId/library', verifyToken, (req, res) => {
-  const { userId } = req.params;
-  const users = readJSON(usersFile);
-  const user = users.find(u => u.id === userId);
-  
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+  try {
+    const { userId } = req.params;
+    console.log(`[GET /library] userId: ${userId}`);
+    
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+      console.log(`[GET /library] User not found: ${userId}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-  // Initialize library if it doesn't exist
-  if (!user.library) {
-    user.library = {
-      favorites: [],
-      reading: [],
-      completed: [],
-      planToRead: [],
-      dropped: []
-    };
-  }
+    // Initialize library if it doesn't exist
+    if (!user.library) {
+      console.log(`[GET /library] Initializing library for user: ${userId}`);
+      user.library = {
+        favorites: [],
+        reading: [],
+        completed: [],
+        planToRead: [],
+        dropped: []
+      };
+      writeJSON(usersFile, users);
+    }
 
-  res.json(user.library);
+    console.log(`[GET /library] Returning library for user: ${userId}`, user.library);
+    res.json(user.library);
+  } catch (error) {
+    console.error('[GET /library] Error:', error.message, error.stack);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Add/remove manga from user's list
 app.post('/api/users/:userId/list', verifyToken, async (req, res) => {
-  const { userId } = req.params;
-  const { mangaId, status, manga } = req.body;
-  
-  if (!mangaId || !status) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  const users = readJSON(usersFile);
-  const user = users.find(u => u.id === userId);
-  
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  // Initialize library structure if it doesn't exist
-  if (!user.library) {
-    user.library = {
-      favorites: [],
-      reading: [],
-      completed: [],
-      planToRead: [],
-      dropped: []
-    };
-  }
-
-  // Get manga details from AniList if not provided
-  let mangaData = manga;
-  if (!mangaData) {
-    mangaData = await fetchMangaFromAniList(mangaId);
-    if (!mangaData) {
-      return res.status(404).json({ error: 'Manga not found on AniList' });
+  try {
+    const { userId } = req.params;
+    const { mangaId, status, manga } = req.body;
+    
+    console.log(`[POST /list] userId: ${userId}, mangaId: ${mangaId}, status: ${status}`);
+    
+    if (!mangaId || !status) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+      console.log(`[POST /list] User not found: ${userId}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Initialize library structure if it doesn't exist
+    if (!user.library) {
+      user.library = {
+        favorites: [],
+        reading: [],
+        completed: [],
+        planToRead: [],
+        dropped: []
+      };
+    }
+
+    // Create minimal manga data object with only necessary fields
+    let mangaData = {
+      id: mangaId,
+      title: manga?.title || { romaji: 'Unknown' },
+      coverImage: manga?.coverImage || { large: '' }
+    };
+
+    // Remove manga from all lists first
+    ['reading', 'completed', 'planToRead', 'dropped'].forEach(listType => {
+      user.library[listType] = user.library[listType].filter(m => m.id !== mangaId);
+    });
+
+    // Add manga to the specified list
+    mangaData.addedDate = new Date().toISOString();
+    mangaData.status = status;
+    user.library[status].push(mangaData);
+
+    writeJSON(usersFile, users);
+    console.log(`[POST /list] Successfully added manga ${mangaId} to ${status}`);
+    res.json({ added: true, status });
+  } catch (error) {
+    console.error('[POST /list] Error:', error.message, error.stack);
+    res.status(500).json({ error: error.message });
   }
-
-  // Remove manga from all lists first
-  ['reading', 'completed', 'planToRead', 'dropped'].forEach(listType => {
-    user.library[listType] = user.library[listType].filter(m => m.id !== mangaId);
-  });
-
-  // Add manga to the specified list
-  mangaData.addedDate = new Date().toISOString();
-  mangaData.status = status;
-  user.library[status].push(mangaData);
-
-  writeJSON(usersFile, users);
-  res.json({ added: true, status });
 });
 
 // Add/remove manga from favorites
 app.post('/api/users/:userId/favorites', verifyToken, (req, res) => {
-  const { userId } = req.params;
-  const { mangaId, manga } = req.body;
-  
-  if (!mangaId || !manga) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  try {
+    const { userId } = req.params;
+    const { mangaId, manga } = req.body;
+    
+    console.log(`[POST /favorites] userId: ${userId}, mangaId: ${mangaId}`);
+    
+    if (!mangaId) {
+      return res.status(400).json({ error: 'Missing mangaId' });
+    }
 
-  const users = readJSON(usersFile);
-  const user = users.find(u => u.id === userId);
-  
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+      console.log(`[POST /favorites] User not found: ${userId}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-  // Initialize library structure if it doesn't exist
-  if (!user.library) {
-    user.library = {
-      favorites: [],
-      reading: [],
-      completed: [],
-      planToRead: [],
-      dropped: []
-    };
-  }
+    // Initialize library structure if it doesn't exist
+    if (!user.library) {
+      user.library = {
+        favorites: [],
+        reading: [],
+        completed: [],
+        planToRead: [],
+        dropped: []
+      };
+    }
 
-  const isFavorite = user.library.favorites.some(m => m.id === mangaId);
-  
-  if (isFavorite) {
-    // Remove from favorites
-    user.library.favorites = user.library.favorites.filter(m => m.id !== mangaId);
-  } else {
-    // Add to favorites
-    manga.addedDate = new Date().toISOString();
-    user.library.favorites.push(manga);
-  }
+    const isFavorite = user.library.favorites.some(m => m.id === mangaId);
+    
+    if (isFavorite) {
+      // Remove from favorites
+      user.library.favorites = user.library.favorites.filter(m => m.id !== mangaId);
+      console.log(`[POST /favorites] Removed manga ${mangaId} from favorites`);
+    } else {
+      // Add to favorites - store only minimal data
+      const mangaData = {
+        id: mangaId,
+        title: manga?.title || { romaji: 'Unknown' },
+        coverImage: manga?.coverImage || { large: '' },
+        addedDate: new Date().toISOString()
+      };
+      user.library.favorites.push(mangaData);
+      console.log(`[POST /favorites] Added manga ${mangaId} to favorites`);
+    }
 
-  writeJSON(usersFile, users);
-  res.json({ isFavorite: !isFavorite });
+    writeJSON(usersFile, users);
+    res.json({ isFavorite: !isFavorite });
+  } catch (error) {
+    console.error('[POST /favorites] Error:', error.message, error.stack);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Remove manga from user's list
@@ -873,63 +940,87 @@ app.get('/api/search', async (req, res) => {
 
 // User endpoints
 app.post('/api/register', (req, res) => {
-  const users = readJSON(usersFile);
-  const { username, email, password, avatar } = req.body;
-  // Username validation
-  if (!username || username.length < 3) {
-    return res.status(400).json({ error: 'Логин должен быть не короче 3 символов' });
-  }
-  // Password validation
-  if (!password || password.length < 8) {
-    return res.status(400).json({ error: 'Пароль должен быть не короче 8 символов' });
-  }
-  // Email validation (basic regex)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Некорректный email адрес' });
-  }
-  if (users.find(u => u.username === username || u.email === email)) {
-    return res.status(409).json({ error: 'User already exists' });
-  }
-  
-  // Create new user with default fields
-  const user = { 
-    id: Date.now().toString(), 
-    username, 
-    email, 
-    password, 
-    avatar,
-    background: 'images/onepiece/693/01.jpg', // Default background
-    library: {
-      favorites: [],
-      reading: [],
-      completed: [],
-      planToRead: [],
-      dropped: []
-    },
-    avatarFrame: '' // Empty by default, user can choose later
-  };
+  try {
+    const users = readJSON(usersFile);
+    const { username, email, password, avatar } = req.body;
+    // Username validation
+    if (!username || username.length < 3) {
+      return res.status(400).json({ error: 'Логин должен быть не короче 3 символов' });
+    }
+    // Password validation
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: 'Пароль должен быть не короче 8 символов' });
+    }
+    // Email validation (basic regex)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Некорректный email адрес' });
+    }
+    if (users.find(u => u.username === username || u.email === email)) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+    
+    // Create new user with default fields
+    const user = { 
+      id: Date.now().toString(), 
+      username, 
+      email, 
+      password, 
+      avatar,
+      background: 'images/onepiece/693/01.jpg', // Default background
+      library: {
+        favorites: [],
+        reading: [],
+        completed: [],
+        planToRead: [],
+        dropped: []
+      },
+      avatarFrame: '' // Empty by default, user can choose later
+    };
 
-  users.push(user);
-  writeJSON(usersFile, users);
-  res.status(201).json({ 
-    id: user.id, 
-    username, 
-    email, 
-    avatar,
-    background: user.background,
-    library: user.library,
-    avatarFrame: user.avatarFrame
-  });
+    users.push(user);
+    writeJSON(usersFile, users);
+    res.status(201).json({ 
+      id: user.id, 
+      username, 
+      email, 
+      avatar,
+      background: user.background,
+      library: user.library,
+      avatarFrame: user.avatarFrame
+    });
+  } catch (error) {
+    console.error('[POST /register] Error:', error.message, error.stack);
+    res.status(500).json({ error: 'Registration failed: ' + error.message });
+  }
 });
 
 // JWT is already imported at the top of the file
 
 app.post('/api/login', (req, res) => {
-  const users = readJSON(usersFile);
-  const { username, password } = req.body;
-  const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  try {
+    console.log('[POST /login] Received request:', { body: req.body });
+    const users = readJSON(usersFile);
+    console.log('[POST /login] Users count:', users.length);
+    console.log('[POST /login] Users:', users.map(u => ({ id: u.id, username: u.username, email: u.email })));
+    
+    const { username, password } = req.body;
+    console.log('[POST /login] Looking for user with username/email:', username);
+    
+    const user = users.find(u => {
+      const usernameMatch = u.username === username;
+      const emailMatch = u.email === username;
+      const passwordMatch = u.password === password;
+      console.log(`[POST /login] Checking user ${u.username}: username=${usernameMatch}, email=${emailMatch}, password=${passwordMatch}`);
+      return (usernameMatch || emailMatch) && passwordMatch;
+    });
+    
+    if (!user) {
+      console.log('[POST /login] No matching user found');
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    console.log('[POST /login] User found:', user.username);
   
   // Initialize or migrate legacy fields to new structure
   if (!user.library) {
@@ -990,6 +1081,10 @@ app.post('/api/login', (req, res) => {
     avatarFrame: user.avatarFrame,
     token: token  // Add token to response
   });
+  } catch (error) {
+    console.error('[POST /login] Error:', error.message, error.stack);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Get user info by username (no password required, for profile page)

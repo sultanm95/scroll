@@ -37,8 +37,6 @@ export default function AlbumCoverPlayer({
         <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent rounded-full" />
       </div>
 
-     
-      {title && <div className="text-sm text-center text-gray-300">{title}</div>}
     </div>
   );
 }

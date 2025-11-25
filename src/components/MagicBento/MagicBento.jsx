@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { gsap } from 'gsap';
 import { useAuth } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import MiniMangaCard from '../MangaDetails/MiniMangaCard/MiniMangaCard';
 import './MagicBento.css';
 
 const DEFAULT_PARTICLE_COUNT = 20;
@@ -26,7 +27,9 @@ const generateDefaultCardData = (userData) => {
       title: 'Моя библиотека',
       description: userData ? `${userData.library?.reading?.length || 0} манги читаются` : 'Войдите чтобы читать',
       label: 'Library',
-      link: '/library'
+      link: '/library',
+      isLibraryCard: true,
+      library: userData?.library || { reading: [], completed: [], planToRead: [], dropped: [], favorites: [] }
     },
     {
       color: '#060010',
@@ -80,6 +83,74 @@ const updateCardGlowProperties = (card, mouseX, mouseY, glow, radius) => {
   card.style.setProperty('--glow-intensity', glow.toString());
   card.style.setProperty('--glow-radius', `${radius}px`);
 };
+const LibraryCardContent = ({ library, navigate }) => {
+  const DISPLAY_COUNT = 10;
+
+  const SECTIONS = [
+    { key: "reading", title: "Читаю" },
+    { key: "completed", title: "Прочитано" },
+    { key: "favorites", title: "Избранное" },
+    { key: "planning", title: "В планах" },
+    { key: "dropped", title: "Брошенно" },
+  ];
+
+  return (
+    <div className="library-container">
+      {SECTIONS.map((section) => {
+        const items = library?.[section.key] || [];
+
+        return (
+          <div key={section.key} className="library-section">
+            {/* Заголовок */}
+            <div className="section-header">
+              <h3 className="section-title">{section.title}</h3>
+
+              {items.length > 0 && (
+                <span className="section-count">{items.length}</span>
+              )}
+            </div>
+
+            {/* Контент */}
+            {items.length === 0 ? (
+              <div className="section-empty">Ничего нет…</div>
+            ) : (
+              <div className="section-items">
+                {items.slice(0, DISPLAY_COUNT).map((manga) => (
+                  <div
+                    key={manga.id}
+                    className="manga-card"
+                    onClick={() => navigate(`/manga/${manga.id}`)}
+                  >
+                    <img
+                      src={manga.coverImage?.large}
+                      alt={manga.title?.romaji}
+                      className="manga-img"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://via.placeholder.com/60x86?text=No+Cover";
+                      }}
+                    />
+                  </div>
+                ))}
+
+                {/* Кнопка "ещё" */}
+                {items.length > DISPLAY_COUNT && (
+                  <div
+                    className="manga-more"
+                    onClick={() => navigate("/library")}
+                  >
+                    +{items.length - DISPLAY_COUNT}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 
 const ParticleCard = ({
   children,
@@ -632,35 +703,13 @@ const MagicBento = ({
                       </div>
                     </div>
                   </>
+                ) : card.isLibraryCard ? (
+                  <>
+                    <LibraryCardContent library={card.library} navigate={navigate} />
+                  </>
                 ) : (
                   <>
-                    <div 
-                      className="magic-bento-card__header"
-                      onClick={() => {
-                        console.log('Clicked on card:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <div className="magic-bento-card__label">{card.label}</div>
-                    </div>
-                    <div 
-                      className="magic-bento-card__content"
-                      onClick={() => {
-                        console.log('Clicked on card content:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <h2 className="magic-bento-card__title">{card.title}</h2>
-                      <p className="magic-bento-card__description">{card.description}</p>
-                    </div>
+                    <LibraryCardContent library={card.library} navigate={navigate} />
                   </>
                 )}
               </ParticleCard>

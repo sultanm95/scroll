@@ -1,0 +1,45 @@
+.user-anilist-library {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-anilist-library__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 20px 0;
+}
+
+.user-anilist-library--loading,
+.user-anilist-library--error {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.user-anilist-library--loading {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+}
+
+.user-anilist-library--error {
+  background: rgba(255, 76, 76, 0.1);
+  border: 1px solid rgba(255, 76, 76, 0.3);
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-size: 16px;
+}
+
+.user-anilist-library--error p {
+  margin: 0;
+}
+
+.user-anilist-library__empty {
+  padding: 40px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 76, 76, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+}

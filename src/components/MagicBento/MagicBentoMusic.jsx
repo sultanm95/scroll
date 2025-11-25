@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { useAuth } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AlbumCoverPlayer from '../ui/MusicDisc/MusicDisk';
+import DeezerPlayer from '../ui/DeezerPlayer/DeezerPlayer';
 import './MagicBentoMusic.css';
 
 const DEFAULT_PARTICLE_COUNT = 20;
@@ -13,36 +14,7 @@ const MOBILE_BREAKPOINT = 768;
 const generateDefaultCardData = (userData) => {
   console.log('Generating card data for user:', userData);
   const baseCards = [
-    {
-      color: '#060010',
-      title: 'Loading...',
-      description: 'Loading...',
-      label: 'Profile',
-      avatar: '',
-      backgroundImage: '',
-      link: '/settings'
-    },
-    {
-      color: '#060010',
-      title: 'Моя библиотека',
-      description: userData ? `${userData.library?.reading?.length || 0} манги читаются` : 'Войдите чтобы читать',
-      label: 'Library',
-      link: '/library'
-    },
-    {
-      color: '#060010',
-      title: 'Отзывы',
-      description:'Ваш список отзывов',
-      label: 'Reviews',
-      link: '/reviews'
-    },
-    {
-      color: '#060010',
-      title: 'Настройки',
-      description:'Настройки вашего аккаунта',
-      label: 'Settings',
-      link: '/settings'
-    }
+
   ];
 
   return baseCards;
@@ -491,9 +463,25 @@ const buildCardData = (userData) => {
     cover: defaultMusicCover,
     link: '/music'
   };
+  const playlistCard = {
+    color: '#1DB954',
+    title: 'My Playlist',
+    description: 'Your favorite tracks',
+    label: 'Playlist',
+    cover: 'https://example.com/playlist-cover.jpg',
+    link: '/playlist'
+  };
+    const topMusic = {
+    color: '#1DB954',
+    title: 'Top Charts',
+    description: 'The most popular tracks',
+    label: 'Charts',
+    cover: 'https://example.com/playlist-cover.jpg',
+    link: '/charts'
+  }
 
   const defaultCards = generateDefaultCardData(userData);
-  return [musicCard, ...defaultCards];
+  return [musicCard,playlistCard, topMusic, ...defaultCards];
 };
 
 const MagicBentoMusic = ({
@@ -598,18 +586,15 @@ const MagicBentoMusic = ({
                         opacity: 0.3
                       }} 
                     />
+                    <AlbumCoverPlayer 
+                      size={100}
+                      spinning={true}
+                      speed={8}
+                      title={card.title}
+                      coverUrl={card.cover}
+                    />
                     <div className="music-card-container">
-                      <AlbumCoverPlayer 
-                        size={100}
-                        spinning={true}
-                        speed={8}
-                        title={card.title}
-                        coverUrl={card.cover}
-                      />
-                      <div className="music-card-info">
-                        <h2 className="music-card-title">{card.title}</h2>
-                        <p className="music-card-artist">{card.description}</p>
-                      </div>
+                      <DeezerPlayer />
                     </div>
                   </>
                 ) : (
