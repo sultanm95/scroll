@@ -36,5 +36,8 @@
   "executionPolicy": {
     "scope": "CurrentUser",
     "policy": "RemoteSigned"
+  },
+  "devDependencies": {
+    "vite": "^7.2.2"
   }
 }

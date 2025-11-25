@@ -1132,25 +1132,53 @@ const server = app.listen(PORT, () => {
 
 // --- Optional AI proxy endpoint (requires OPENAI_API_KEY) ---
 // Usage: POST /api/ai/generate { prompt: '...' }
-app.post('/api/ai/generate', async (req, res) => {
-  const { prompt } = req.body || {};
-  if (!prompt) return res.status(400).json({ error: 'Missing prompt' });
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return res.status(501).json({ error: 'OPENAI_API_KEY not set on server' });
+// === ПРОКСИ К ANILIST (добавьте это в server.js) ===
+// ПРОКСИ К ANILIST (добавьте в server.js)
+app.post('/api/anilist', async (req, res) => {
+  const { search } = req.body;
+  if (!search) return res.status(400).json({ error: 'No search term' });
+
+  const query = `
+    query ($search: String) {
+      Media(search: $search, type: MANGA) {
+        id
+        title {
+          romaji
+          english
+          native
+        }
+        chapters
+        volumes
+        description(asHtml: false)
+        coverImage {
+          large
+        }
+        siteUrl
+        genres
+      }
+    }
+  `;
+
   try {
-    const resp = await fetch('https://api.openai.com/v1/responses', {
+    const response = await fetch('https://graphql.anilist.co', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({ model: 'gpt-5-mini', input: prompt })
+      body: JSON.stringify({ query, variables: { search: search.trim() } })
     });
-    const data = await resp.json();
-    // Return the raw response for flexibility; client can parse as needed
-    res.json(data);
+
+    const result = await response.json();
+
+    if (result.errors) {
+      console.error('AniList errors:', result.errors);
+      return res.status(500).json({ errors: result.errors });
+    }
+
+    res.json({ Media: result.data?.Media || null });
   } catch (err) {
-    console.error('AI proxy error:', err);
-    res.status(500).json({ error: err.message || 'AI request failed' });
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: 'Failed' });
   }
 });

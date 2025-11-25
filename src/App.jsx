@@ -12,36 +12,14 @@ import MangaReader from "./pages/MangaReader";
 import { LibraryPage } from "./pages/LibraryPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import Galaxy from "./components/Galaxy/Galaxy";
 import "./App.css";
+import ChatBot from "./components/ChatBot/ChatBot";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <div className="app">
-          <Galaxy
-            density={0.3}
-            glowIntensity={0.4}
-            saturation={0.0}
-            hueShift={180}
-            starSpeed={0.3}
-            rotationSpeed={0.05}
-            mouseRepulsion={false}
-            repulsionStrength={1.5}
-            twinkleIntensity={0.4}
-            transparent={true}
-            className="background-galaxy"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: -1,
-              pointerEvents: 'none'
-            }}
-          />
           <Header />
           <main className="content">
             <Routes>
@@ -57,6 +35,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
+          <ChatBot />
         </div>
       </AuthProvider>
     </BrowserRouter>
