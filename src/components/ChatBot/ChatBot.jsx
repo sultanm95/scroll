@@ -1,16 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './ChatBot.css';
 import ReactMarkdown from 'react-markdown';
 
-const RAPIDAPI_HOST = "chatgpt-best-price.p.rapidapi.com";
-const RAPIDAPI_KEY = "acb9c70d4dmsh57b3a9137d0eab0p1e4132jsn6375289c8556";
+// API configuration - use environment variables in production
+const AIMLAPI_BASE_URL = import.meta.env.VITE_AIMLAPI_BASE_URL || "https://api.aimlapi.com/v1";
+const AIMLAPI_KEY = import.meta.env.VITE_AIMLAPI_KEY || "f59211da6a594bcdb5a4c694abd80a4b";
 
-// Получить информацию о манге с собственного backend, который работает как proxy к AniList
+// ElevenLabs API configuration
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || "8d79efd5655e9843f7e34c5f0df361359913ca8321b9198d09cbd5abd605bf2b";
+const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM"; // Default: Rachel
+const ELEVENLABS_API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`;
+
+const STORAGE_KEY = 'chatbot_messages';
+
+// Fetch manga by name - returns the most relevant match
 async function fetchMangaFromAniList(searchText) {
-  try {
-    const query = `
-      query ($search: String) {
-        manga: Media(search: $search, type: MANGA) {
+  const normalized = searchText.toLowerCase().trim();
+
+  // ХАРДКОД ДЛЯ САМЫХ ТОПОВЫХ (на всякий пожарный)
+  const hardcode = {
+    "one piece": 30013, "ван пис": 30013, "ванпис": 30013, "op": 30013, "onepiece": 30013,
+    "naruto": 30002, "наруто": 30002,
+    "bleach": 30003, "блич": 30003,
+    "attack on titan": 30001, "shingeki no kyojin": 30001, "аот": 30001, "атака титанов": 30001,
+    "jujutsu kaisen": 113138, "джуджуцу": 113138, "магическая битва": 113138,
+    "chainsaw man": 113521, "бензопила": 113521, "человек бензопила": 113521,
+    "demon slayer": 101517, "кимэцу": 101517, "клинок": 101517
+  };
+
+  if (hardcode[normalized]) {
+    const id = hardcode[normalized];
+    const query = `query { Media(id: ${id}, type: MANGA) { id title { romaji english native } chapters genres description coverImage { large } siteUrl } }`;
+    try {
+      const res = await fetch("https://graphql.anilist.co", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query }) });
+      const json = await res.json();
+      return json.data.Media;
+    } catch (e) { console.error(e); }
+  }
+
+  // ЕСЛИ НЕТ В ХАРДКОДЕ — ИЩЕМ ВСЕ ВАРИАНТЫ И БЕРЁМ САМУЮ ПОПУЛЯРНУЮ
+  const query = `
+    query ($search: String) {
+      Page(page: 1, perPage: 20) {
+        media(search: $search, type: MANGA, sort: POPULARITY_DESC, isAdult: false) {
           id
           title { romaji english native }
           chapters
@@ -18,140 +50,616 @@ async function fetchMangaFromAniList(searchText) {
           description
           coverImage { large }
           siteUrl
-        }
-        anime: Media(search: $search, type: ANIME) {
-          id
-          title { romaji english native }
-          episodes
-          genres
-          description
-          coverImage { large }
-          siteUrl
+          popularity
         }
       }
-    `;
+    }
+  `;
 
-    const response = await fetch("https://graphql.anilist.co", { // ⚠️ без слэша!
+  try {
+    const response = await fetch("https://graphql.anilist.co", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables: { search: searchText } })
     });
 
-    if (!response.ok) {
-      console.error("AniList returned:", response.status);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    const result = data?.data?.manga || data?.data?.anime || null;
-    return result;
+    const results = data?.data?.Page?.media || [];
+
+    if (results.length === 0) return null;
+
+    // ВОТ ГЛАВНОЕ — СОРТИРУЕМ ПО ПОПУЛЯРНОСТИ И БЕРЁМ ПЕРВУЮ
+    const bestMatch = results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))[0];
+
+    return bestMatch;
+
   } catch (err) {
     console.error("AniList error:", err);
     return null;
   }
 }
 
+// Fetch top manga
+async function fetchTopManga(sortType = "POPULARITY_DESC") {
+  try {
+    const query = `
+      query {
+        Page(page: 1, perPage: 10) {
+          media(type: MANGA, sort: ${sortType}) {
+            id
+            title { romaji english }
+            coverImage { large }
+            siteUrl
+          }
+        }
+      }
+    `;
 
+    const response = await fetch("https://graphql.anilist.co", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ query })
+    });
 
+    const data = await response.json();
+    return data?.data?.Page?.media || [];
+  } catch (err) {
+    console.error("AniList TOP error:", err);
+    return [];
+  }
+}
+
+// Extract manga name from commands like "open [name]", "show [name]", "find [name]"
+function extractMangaName(text) {
+  // Look for explicit commands: open, show, find, search, get
+  const commandPattern = /(?:open|show|find|search|get|view)\s+(.+?)(?:\s|$|\.|!|\?)/i;
+  const match = text.match(commandPattern);
+  
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  return null;
+}
+
+// Check if it's a "top 10" request
+function isTop10Request(text) {
+  return /top\s*10/i.test(text) || /top\s*ten/i.test(text);
+}
 
 export default function ChatBot() {
+  const initialMessage = { 
+    sender: 'bot', 
+    text: 'Hi! I\'m a manga expert chatbot. You can:\n- Ask me about any manga\n- Type "top 10" to see the top 10 most popular manga\n- Type "open [manga name]" to find and view a specific manga\n- Or just chat with me about manga!' 
+  };
+  
+  // Load messages from localStorage
+  const loadMessages = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [initialMessage];
+      }
+    } catch (err) {
+      console.error("Error loading messages:", err);
+    }
+    return [initialMessage];
+  };
+
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { sender: 'bot', text: 'Привет! Я манга-бот, можешь спросить про любую мангу.' }
-  ]);
+  const [messages, setMessages] = useState(loadMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [error, setError] = useState(null);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMsg = { sender: 'user', text: input };
-    setMessages(prev => [...prev, userMsg]);
+  const messagesEndRef = useRef(null);
+  const bodyRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const audioRef = useRef(null);
+  const audioUrlRef = useRef(null);
+
+  // Save messages to localStorage
+  const saveMessages = useCallback((newMessages) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newMessages));
+    } catch (err) {
+      console.error("Error saving messages:", err);
+    }
+  }, []);
+
+  // Auto-scroll to last message
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading, listening, scrollToBottom]);
+
+  // SpeechRecognition setup
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.continuous = false;
+
+        recognition.onstart = () => setListening(true);
+        recognition.onend = () => setListening(false);
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          setListening(false);
+          if (event.error === 'not-allowed') {
+            setError("Please allow microphone access in your browser settings");
+          }
+        };
+
+        recognition.onresult = (event) => {
+          const text = event.results[0][0].transcript;
+          setInput(text);
+          sendMessage(text);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const startVoice = () => {
+    if (recognitionRef.current && !listening) {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        console.error("Error starting speech recognition:", err);
+        setError("Failed to start speech recognition");
+      }
+    }
+  };
+
+  const stopVoice = () => {
+    if (recognitionRef.current && listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+    }
+  };
+
+  const speak = async (text) => {
+  if (!ELEVENLABS_API_KEY) {
+    console.error("ElevenLabs API key is not configured");
+    setError("Voice feature is not configured. Please set VITE_ELEVENLABS_API_KEY.");
+    return;
+  }
+
+  // Stop any currently playing audio
+  stopSpeaking();
+
+  try {
+    // Clean text from markdown
+    const cleanText = text.replace(/[*#`\[\]()]/g, '').replace(/\n/g, ' ').trim();
+    
+    if (!cleanText) {
+      return;
+    }
+
+    setSpeaking(true);
+
+    // Call ElevenLabs API — НОВЫЙ MODEL_ID ДЛЯ FREE TIER
+    const response = await fetch(ELEVENLABS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': ELEVENLABS_API_KEY
+      },
+      body: JSON.stringify({
+        text: cleanText,
+        model_id: 'eleven_multilingual_v2',  // ← ЭТО ИСПРАВЛЕНИЕ! Бесплатная модель 2025
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: true
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`ElevenLabs API error: ${response.status} - ${errorData.detail?.message || response.statusText}`);
+    }
+
+    // Get audio blob
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    audioUrlRef.current = audioUrl;
+
+    // Create audio element and play
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    audio.onended = () => {
+      setSpeaking(false);
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+        audioUrlRef.current = null;
+      }
+    };
+
+    audio.onerror = (error) => {
+      console.error('Audio playback error:', error);
+      setSpeaking(false);
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+        audioUrlRef.current = null;
+      }
+      setError('Error playing audio');
+    };
+
+    await audio.play();
+
+  } catch (err) {
+    console.error('Speak error:', err);
+    setSpeaking(false);
+    // Clean up audio URL if it was created
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setError(err.message || 'Error generating speech');
+  }
+};
+
+  const stopSpeaking = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      // Clean up the audio element
+      audioRef.current.src = '';
+      audioRef.current = null;
+      setSpeaking(false);
+    }
+    // Clean up the audio URL
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      const notification = document.createElement('div');
+      notification.textContent = 'Copied!';
+      notification.className = 'copy-notification';
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 2000);
+    }).catch(err => {
+      console.error('Error copying:', err);
+    });
+  };
+
+  const clearHistory = () => {
+    if (window.confirm('Are you sure you want to clear the message history?')) {
+      const newMessages = [initialMessage];
+      setMessages(newMessages);
+      saveMessages(newMessages);
+      stopSpeaking();
+      stopVoice();
+    }
+  };
+
+  // Send message
+  const sendMessage = async (forcedInput = null) => {
+    const userText = forcedInput || input;
+
+    if (!userText.trim()) return;
+
+    setError(null);
+    const newUserMessage = { sender: "user", text: userText };
+    setMessages(prev => {
+      const updated = [...prev, newUserMessage];
+      saveMessages(updated);
+      return updated;
+    });
     setInput('');
     setLoading(true);
 
     try {
-      // 1. Получаем данные с вашего backend
-      const manga = await fetchMangaFromAniList(input);
+      const textLower = userText.toLowerCase();
+      let mangaData = null;
+      let topMangaList = null;
+      let isTop10 = false;
+      let isOpenCommand = false;
 
-      let context = "";
-      if (manga) {
-        let info = `Название: ${manga.title?.english || manga.title?.romaji || manga.title?.native}`;
-        if (manga.genres && manga.genres.length)
-          info += `\nЖанры: ${manga.genres.join(', ')}`;
-        if (manga.chapters)
-          info += `\nГлав всего: ${manga.chapters}`;
-        if (manga.siteUrl)
-          info += `\nПодробнее: ${manga.siteUrl}`;
-        if (manga.coverImage?.large)
-          info += `\nКартинка: ${manga.coverImage.large}`;
-        if (manga.description)
-          info += `\nОписание: ${(manga.description.replace(/<br>/g, '\n')).replace(/<[^>]*>/g, '')}`;
-        context = `Ты помощник по манге. Используй только эти свежие данные, отвечай кратко и по делу. Не придумывай лишнего. Если просят факты — опирайся только на то, что дано ниже.\n\n${info}`;
-      } else {
-        context = "Манга по этому запросу не найдена в нашей базе AniList. Сообщи пользователю, что ничего не удалось найти, и предложи уточнить название (на английском или японском).";
+      // Check for "top 10" command
+      if (isTop10Request(userText)) {
+        isTop10 = true;
+        topMangaList = await fetchTopManga("POPULARITY_DESC");
+      }
+      // Check for manga search commands like "open one piece", "show naruto", etc.
+      else {
+        const mangaName = extractMangaName(userText);
+        if (mangaName && !isTop10Request(userText)) {
+          isOpenCommand = true;
+          mangaData = await fetchMangaFromAniList(mangaName);
+        }
       }
 
-      // 2. Запрос к ChatGPT
-      const res = await fetch("https://chatgpt-best-price.p.rapidapi.com/v1/chat/completions", {
+      // Prepare context for GPT
+      let context = "";
+      let systemMessage = "You are a friendly and knowledgeable manga expert chatbot. Help users with manga recommendations, information, and discussions. Keep responses conversational and helpful.";
+
+      if (isTop10 && topMangaList && topMangaList.length > 0) {
+        context = `### Top 10 Most Popular Manga:\n\n`;
+        topMangaList.forEach((m, i) => {
+          const title = m.title.english || m.title.romaji;
+          context += `${i + 1}. **${title}**\n   [View Manga](http://127.0.0.1:5173/manga/${m.id})\n\n`;
+        });
+        systemMessage = "You are a manga expert. Present the top 10 manga list to the user in a friendly and engaging way. Format the response nicely using markdown.";
+      } else if (isOpenCommand) {
+        if (mangaData) {
+          context = `Manga Found:\n\n`;
+          context += `**Title:** ${mangaData.title?.english || mangaData.title?.romaji || mangaData.title?.native}\n\n`;
+          
+          if (mangaData.genres && mangaData.genres.length > 0) {
+            context += `**Genres:** ${mangaData.genres.join(', ')}\n\n`;
+          }
+          if (mangaData.chapters) {
+            context += `**Chapters:** ${mangaData.chapters}\n\n`;
+          }
+          if (mangaData.coverImage?.large) {
+            context += `**Cover:** ${mangaData.coverImage.large}\n\n`;
+          }
+          if (mangaData.description) {
+            context += `**Description:**\n${mangaData.description.replace(/<[^>]*>/g, '')}\n\n`;
+          }
+          if (mangaData.id) {
+            context += `[View this manga](http://127.0.0.1:5173/manga/${mangaData.id})`;
+          }
+          
+          systemMessage = "You are a manga expert. Present the manga information to the user in a friendly and engaging way. Make sure to include the link to view the manga. Format the response nicely using markdown.";
+        } else {
+          context = `No manga found with that name.`;
+          systemMessage = "Inform the user politely that the manga was not found and suggest they try a different search term or check the spelling.";
+        }
+      }
+
+      // Prepare conversation history (last 8 messages for context)
+      const recentMessages = messages.slice(-8);
+      const conversationHistory = recentMessages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
+      // Build GPT messages
+      const gptMessages = [
+        { role: "system", content: systemMessage },
+        ...conversationHistory
+      ];
+
+      // Add context if we have manga data
+      if (context) {
+        gptMessages.push({
+          role: "user",
+          content: context + (isTop10 || isOpenCommand ? '' : `\n\nUser question: ${userText}`)
+        });
+      } else {
+        // Regular chat - no manga data
+        gptMessages.push({
+          role: "user",
+          content: userText
+        });
+      }
+
+      // Call GPT API
+      const res = await fetch(`${AIMLAPI_BASE_URL}/chat/completions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-rapidapi-host": RAPIDAPI_HOST,
-          "x-rapidapi-key": RAPIDAPI_KEY
+          "Authorization": `Bearer ${AIMLAPI_KEY}`
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: context },
-            { role: "user", content: input }
-          ]
+          messages: gptMessages,
+          temperature: 0.7
         })
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`API error: ${res.status} - ${errorText}`);
+      }
+
       const data = await res.json();
-      const botText = data?.choices?.[0]?.message?.content || "Нет ответа от ИИ.";
-      setMessages(msgs => [...msgs, { sender: 'bot', text: botText }]);
+      const botText = data?.choices?.[0]?.message?.content || "Sorry, I couldn't process your request. Please try again.";
+
+      setMessages(prev => {
+        const updated = [...prev, { sender: 'bot', text: botText }];
+        saveMessages(updated);
+        return updated;
+      });
+
     } catch (err) {
-      setMessages(msgs => [
-        ...msgs,
-        { sender: 'bot', text: "Ошибка: не удалось получить ответ или мангу. Попробуйте позже!" }
-      ]);
+      console.error("Send message error:", err);
+      const errorMessage = err.message?.includes('API error') 
+        ? "API error. Please check your internet connection or try again later." 
+        : "Error processing request. Please try again.";
+      
+      setMessages(prev => {
+        const updated = [...prev, { sender: 'bot', text: errorMessage }];
+        saveMessages(updated);
+        return updated;
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // Cleanup on close
+  useEffect(() => {
+    if (!open) {
+      stopSpeaking();
+      stopVoice();
+      setError(null);
+    }
+  }, [open]);
+
   return (
     <>
-      <button className="chatbot-btn" onClick={() => setOpen(true)}>
+      <button 
+        className="chatbot-btn" 
+        onClick={() => setOpen(true)}
+        aria-label="Open chat bot"
+        title="Open chat bot"
+      >
         💬
+        {messages.length > 1 && (
+          <span className="chatbot-badge">{messages.length - 1}</span>
+        )}
       </button>
+
       {open && (
         <div className="chatbot-modal">
           <div className="chatbot-header">
-            <span>Чат-Бот</span>
-            <button onClick={() => setOpen(false)} className="chatbot-close">×</button>
+            <span>Manga Chat Bot</span>
+            <div className="chatbot-header-actions">
+              <button 
+                onClick={clearHistory} 
+                className="chatbot-action-btn"
+                title="Clear history"
+                aria-label="Clear history"
+              >
+                🗑️
+              </button>
+              <button 
+                onClick={() => setOpen(false)} 
+                className="chatbot-close"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
           </div>
-          <div className="chatbot-body">
+
+          {error && (
+            <div className="chatbot-error">
+              {error}
+              <button onClick={() => setError(null)}>×</button>
+            </div>
+          )}
+
+          <div className="chatbot-body" ref={bodyRef}>
             {messages.map((msg, i) => (
               <div key={i} className={`chatbot-msg ${msg.sender}`}>
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                <div className="chatbot-msg-content">
+                  <ReactMarkdown 
+                    components={{
+                      a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" />
+                    }}
+                  >
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
+                <button 
+                  className="chatbot-copy-btn"
+                  onClick={() => copyToClipboard(msg.text)}
+                  title="Copy"
+                  aria-label="Copy message"
+                >
+                  📋
+                </button>
               </div>
             ))}
-            {loading && <div className="chatbot-msg bot">Получаю свежую информацию...</div>}
+
+            {listening && (
+              <div className="chatbot-msg bot">
+                <div className="chatbot-msg-content">
+                  🎙 Listening... 
+                  <button 
+                    className="chatbot-stop-btn"
+                    onClick={stopVoice}
+                    title="Stop recording"
+                  >
+                    ⏹️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <div className="chatbot-msg bot">
+                <div className="chatbot-msg-content chatbot-loading">
+                  <span className="chatbot-dots">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </span>
+                  Processing
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
+
           <div className="chatbot-footer">
+            <button
+              className={`voice-btn ${listening ? "listening" : ""}`}
+              onClick={listening ? stopVoice : startVoice}
+              disabled={loading}
+              title={listening ? "Stop recording" : "Start voice input"}
+              aria-label={listening ? "Stop recording" : "Start voice input"}
+            >
+              {listening ? "🎙" : "🎤"}
+            </button>
+
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && sendMessage()}
-              placeholder="Спроси что-нибудь!"
-              disabled={loading}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder="Type or say something..."
+              disabled={loading || listening}
+              aria-label="Enter message"
             />
-            <button onClick={sendMessage} disabled={loading || !input.trim()}>Отправить</button>
+
+            <button 
+              className="send-btn" 
+              onClick={() => sendMessage()} 
+              disabled={loading || !input.trim() || listening}
+              title="Send"
+              aria-label="Send message"
+            >
+              📩
+            </button>
+
+            <button 
+              className={`voice-btn ${speaking ? "speaking" : ""}`}
+              onClick={speaking ? stopSpeaking : () => {
+                const lastBotMsg = messages.filter(m => m.sender === 'bot').pop();
+                if (lastBotMsg) {
+                  speak(lastBotMsg.text);
+                }
+              }}
+              disabled={messages.length === 0 || !messages.filter(m => m.sender === 'bot').length}
+              title={speaking ? "Stop playback" : "Play last response"}
+              aria-label={speaking ? "Stop playback" : "Play last response"}
+            >
+              {speaking ? "⏹️" : "🔊"}
+            </button>
           </div>
         </div>
       )}
