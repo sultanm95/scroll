@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './ChatBot.css';
 import ReactMarkdown from 'react-markdown';
+import triggerIcon from './chatbot-logo.png';
+import botLogo from './chatbot-logo.png';
+import iconTrash from './iconTrash.png';
+import iconClose from './iconClose.png';
+import iconCopy from './iconCopy.png';
+import micIcon from './micIcon.png';
+import micStopIcon from './micStopIcon.png';
+import speakerIcon from './speakerIcon.png';
+import speakerStopIcon from './speakerStopIcon.png';
+import sendIcon from './sendIcon.png';
 
 // API configuration - use environment variables in production
 const AIMLAPI_BASE_URL = import.meta.env.VITE_AIMLAPI_BASE_URL || "https://api.aimlapi.com/v1";
@@ -13,32 +23,69 @@ const ELEVENLABS_API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN
 
 const STORAGE_KEY = 'chatbot_messages';
 
+const normalizeText = (value = "") =>
+  value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const calcMatchScore = (search, media) => {
+  const normalizedSearch = normalizeText(search);
+  const titles = [
+    media.title?.english,
+    media.title?.romaji,
+    media.title?.native
+  ].filter(Boolean);
+
+  if (titles.length === 0 || !normalizedSearch) return 0;
+
+  let bestScore = 0;
+  for (const title of titles) {
+    const normalizedTitle = normalizeText(title);
+    let score = 0;
+
+    if (!normalizedTitle) continue;
+
+    if (normalizedTitle === normalizedSearch) {
+      score += 1000;
+    } else if (
+      normalizedTitle.includes(normalizedSearch) ||
+      normalizedSearch.includes(normalizedTitle)
+    ) {
+      score += 600;
+    } else {
+      const searchWords = new Set(normalizedSearch.split(" "));
+      const titleWords = new Set(normalizedTitle.split(" "));
+      let overlap = 0;
+
+      searchWords.forEach((word) => {
+        if (word.length > 2 && titleWords.has(word)) {
+          overlap += 1;
+        }
+      });
+
+      if (overlap > 0) {
+        score += overlap * 120;
+      }
+    }
+
+    if (media.popularity) {
+      score += media.popularity / 100;
+    }
+
+    bestScore = Math.max(bestScore, score);
+  }
+
+  return bestScore;
+};
+
 // Fetch manga by name - returns the most relevant match
 async function fetchMangaFromAniList(searchText) {
   const normalized = searchText.toLowerCase().trim();
 
-  // ХАРДКОД ДЛЯ САМЫХ ТОПОВЫХ (на всякий пожарный)
-  const hardcode = {
-    "one piece": 30013, "ван пис": 30013, "ванпис": 30013, "op": 30013, "onepiece": 30013,
-    "naruto": 30002, "наруто": 30002,
-    "bleach": 30003, "блич": 30003,
-    "attack on titan": 30001, "shingeki no kyojin": 30001, "аот": 30001, "атака титанов": 30001,
-    "jujutsu kaisen": 113138, "джуджуцу": 113138, "магическая битва": 113138,
-    "chainsaw man": 113521, "бензопила": 113521, "человек бензопила": 113521,
-    "demon slayer": 101517, "кимэцу": 101517, "клинок": 101517
-  };
-
-  if (hardcode[normalized]) {
-    const id = hardcode[normalized];
-    const query = `query { Media(id: ${id}, type: MANGA) { id title { romaji english native } chapters genres description coverImage { large } siteUrl } }`;
-    try {
-      const res = await fetch("https://graphql.anilist.co", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query }) });
-      const json = await res.json();
-      return json.data.Media;
-    } catch (e) { console.error(e); }
-  }
-
-  // ЕСЛИ НЕТ В ХАРДКОДЕ — ИЩЕМ ВСЕ ВАРИАНТЫ И БЕРЁМ САМУЮ ПОПУЛЯРНУЮ
   const query = `
     query ($search: String) {
       Page(page: 1, perPage: 20) {
@@ -70,10 +117,14 @@ async function fetchMangaFromAniList(searchText) {
 
     if (results.length === 0) return null;
 
-    // ВОТ ГЛАВНОЕ — СОРТИРУЕМ ПО ПОПУЛЯРНОСТИ И БЕРЁМ ПЕРВУЮ
-    const bestMatch = results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))[0];
+    const ranked = results
+      .map((media) => ({
+        media,
+        score: calcMatchScore(normalized, media)
+      }))
+      .sort((a, b) => b.score - a.score || (b.media.popularity || 0) - (a.media.popularity || 0));
 
-    return bestMatch;
+    return ranked[0]?.media || null;
 
   } catch (err) {
     console.error("AniList error:", err);
@@ -114,11 +165,15 @@ async function fetchTopManga(sortType = "POPULARITY_DESC") {
 // Extract manga name from commands like "open [name]", "show [name]", "find [name]"
 function extractMangaName(text) {
   // Look for explicit commands: open, show, find, search, get
-  const commandPattern = /(?:open|show|find|search|get|view)\s+(.+?)(?:\s|$|\.|!|\?)/i;
+  const commandPattern = /(?:^|\b)(open|show|find|search|get|view)\s+(.+)/i;
   const match = text.match(commandPattern);
-  
-  if (match && match[1]) {
-    return match[1].trim();
+
+  if (match && match[2]) {
+    let name = match[2].trim();
+    // Cut trailing punctuation or filler words but keep multi-word titles
+    name = name.replace(/[\.,!?]+$/, '');
+    name = name.replace(/\b(please|pls|thanks?)$/i, '').trim();
+    return name || null;
   }
   return null;
 }
@@ -521,7 +576,7 @@ export default function ChatBot() {
         aria-label="Open chat bot"
         title="Open chat bot"
       >
-        💬
+        <img src={triggerIcon} alt="Open chat bot" />
         {messages.length > 1 && (
           <span className="chatbot-badge">{messages.length - 1}</span>
         )}
@@ -530,7 +585,10 @@ export default function ChatBot() {
       {open && (
         <div className="chatbot-modal">
           <div className="chatbot-header">
-            <span>Manga Chat Bot</span>
+            <div className="chatbot-brand">
+              <img src={botLogo} alt="Bot logo" className="chatbot-logo" />
+              <span>Ваш помощник</span>
+            </div>
             <div className="chatbot-header-actions">
               <button 
                 onClick={clearHistory} 
@@ -538,14 +596,14 @@ export default function ChatBot() {
                 title="Clear history"
                 aria-label="Clear history"
               >
-                🗑️
+                <img src={iconTrash} alt="Clear chat history" />
               </button>
               <button 
                 onClick={() => setOpen(false)} 
                 className="chatbot-close"
                 aria-label="Close"
               >
-                ×
+                <img src={iconClose} alt="Close chat" />
               </button>
             </div>
           </div>
@@ -575,7 +633,7 @@ export default function ChatBot() {
                   title="Copy"
                   aria-label="Copy message"
                 >
-                  📋
+                  <img src={iconCopy} alt="Copy message" />
                 </button>
               </div>
             ))}
@@ -589,7 +647,7 @@ export default function ChatBot() {
                     onClick={stopVoice}
                     title="Stop recording"
                   >
-                    ⏹️
+                    <img src={micStopIcon} alt="Stop recording" />
                   </button>
                 </div>
               </div>
@@ -619,7 +677,10 @@ export default function ChatBot() {
               title={listening ? "Stop recording" : "Start voice input"}
               aria-label={listening ? "Stop recording" : "Start voice input"}
             >
-              {listening ? "🎙" : "🎤"}
+              <img 
+                src={listening ? micStopIcon : micIcon} 
+                alt={listening ? "Stop recording" : "Start voice input"} 
+              />
             </button>
 
             <input
@@ -631,7 +692,7 @@ export default function ChatBot() {
                   sendMessage();
                 }
               }}
-              placeholder="Type or say something..."
+              placeholder="Type or say..."
               disabled={loading || listening}
               aria-label="Enter message"
             />
@@ -643,11 +704,11 @@ export default function ChatBot() {
               title="Send"
               aria-label="Send message"
             >
-              📩
+              <img src={sendIcon} alt="Send message" />
             </button>
 
             <button 
-              className={`voice-btn ${speaking ? "speaking" : ""}`}
+              className={`voice-btn playback-btn ${speaking ? "speaking" : ""}`}
               onClick={speaking ? stopSpeaking : () => {
                 const lastBotMsg = messages.filter(m => m.sender === 'bot').pop();
                 if (lastBotMsg) {
@@ -658,7 +719,10 @@ export default function ChatBot() {
               title={speaking ? "Stop playback" : "Play last response"}
               aria-label={speaking ? "Stop playback" : "Play last response"}
             >
-              {speaking ? "⏹️" : "🔊"}
+              <img 
+                src={speaking ? speakerStopIcon : speakerIcon} 
+                alt={speaking ? "Stop playback" : "Play last response"} 
+              />
             </button>
           </div>
         </div>
