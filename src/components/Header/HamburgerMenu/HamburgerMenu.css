@@ -1,0 +1,180 @@
+.hamburger-menu {
+  position: relative;
+  display: block;
+}
+
+/* Кнопка бургера */
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  background: #fff;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  cursor: pointer;
+  gap: 5px;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover {
+  background: var(--card);
+  color: var(--text); /* или var(--text-alt), если у тебя есть */
+}
+
+.hamburger-btn span {
+  width: 20px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-btn.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Оверлей */
+.hamburger-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Меню навигации */
+.hamburger-nav {
+  position: fixed;
+  top: 60px;
+  right: -300px;
+  width: 280px;
+  height: calc(100vh - 60px);
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 0 16px;
+  z-index: 100;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hamburger-nav.open {
+  right: 0;
+}
+
+.hamburger-nav-content {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 4px;
+}
+
+/* Пункты меню */
+.hamburger-nav-item {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 16px;
+  font-family: Dosis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-weight: 500;
+}
+
+.hamburger-nav-item:hover {
+  background: rgba(255, 76, 76, 0.1);
+  border-color: rgba(255, 76, 76, 0.3);
+  transform: translateX(4px);
+}
+
+.hamburger-nav-item.logout:hover {
+  background: rgba(255, 76, 76, 0.2);
+  border-color: rgba(255, 76, 76, 0.6);
+}
+
+/* Разделитель */
+.hamburger-nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+/* Light theme */
+[data-theme="light"] .hamburger-btn {
+  background: rgba(26, 26, 26, 0.1);
+  border-color: rgba(26, 26, 26, 0.3);
+}
+
+[data-theme="light"] .hamburger-btn:hover {
+  background: rgba(26, 26, 26, 0.2);
+  border-color: rgba(26, 26, 26, 0.6);
+}
+
+[data-theme="light"] .hamburger-btn span {
+  background: rgba(26, 26, 26, 0.8);
+}
+
+/* Мобильная версия - меню слайдится */
+@media (max-width: 768px) {
+  /* Используются стили по умолчанию из .hamburger-nav */
+}
+
+/* Десктопная версия - меню выпадает */
+@media (min-width: 769px) {
+  .hamburger-overlay {
+    display: none;
+  }
+
+  .hamburger-nav {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 220px;
+    height: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 100;
+    transition: all 0.3s ease;
+    overflow: visible;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+  }
+
+  .hamburger-nav.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

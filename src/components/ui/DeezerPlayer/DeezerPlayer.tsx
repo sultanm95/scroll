@@ -1,14 +1,29 @@
 import { useState, useRef } from "react";
 import "./DeezerPlayer.css";
 
+type Track = {
+  id?: number | string;
+  title: string;
+  artists?: string | { name: string }[];
+  artist?: { name: string };
+  album?: { cover_small: string };
+  preview?: string;
+  position?: number | string;
+};
+
+type Props = {
+  tracks?: Track[];
+  onTrackPlay?: (track: Track, index: number) => void;
+};
+
 // Simple Deezer preview player
 // Works without API keys
-export default function DeezerPlayer() {
+export default function DeezerPlayer({ tracks = [], onTrackPlay }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Sample tracks to display
+  // Fallback tracks if none provided
   const defaultTracks = [
     {
       id: 1,
@@ -33,16 +48,25 @@ export default function DeezerPlayer() {
     }
   ];
 
-  const allTracks = defaultTracks;
+  const allTracks = tracks && tracks.length > 0 ? tracks : defaultTracks;
 
   function playTrack(index: number) {
     setCurrentIndex(index);
     const track = allTracks[index];
-    if (!track?.preview) return;
     if (audioRef.current) {
-      audioRef.current.src = track.preview;
-      audioRef.current.play();
-      setIsPlaying(true);
+      // Если есть preview, используем его
+      if (track?.preview) {
+        audioRef.current.src = track.preview;
+        audioRef.current.play();
+        setIsPlaying(true);
+      } else {
+        // Иначе просто показываем, что трек выбран (для Discogs треков без URL)
+        setIsPlaying(true);
+      }
+    }
+    // Call callback if provided (for tracking from parent)
+    if (onTrackPlay) {
+      onTrackPlay(track, index);
     }
   }
 
@@ -75,7 +99,7 @@ export default function DeezerPlayer() {
         <div className="deezer-player__current">
           <div className="deezer-player__info">
             <div className="deezer-player__track-title">{currentTrack.title}</div>
-            <div className="deezer-player__artist">{currentTrack.artist.name}</div>
+            <div className="deezer-player__artist">{currentTrack.artist?.name || 'Unknown'}</div>
           </div>
         </div>
       )}

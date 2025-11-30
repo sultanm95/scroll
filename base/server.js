@@ -11,6 +11,10 @@ import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '../.env' });
 
 // Import local modules
 import { verifyToken } from './middleware/auth.js';
@@ -19,6 +23,7 @@ import { chapterManager } from './manga-chapters.js';
 import { imageManager } from './image-manager.js';
 import { scanMangaChapters } from './manga-scanner.js';
 import logger from './utils/logger.js';
+import * as discogsClient from './discogs-client.js';
 
 // Setup ES Module __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -204,53 +209,67 @@ async function fetchMangaFromAniList(id) {
     }
   `;
 
-  try {
-    console.log('📤 AniList Single Manga Request - ID:', id);
-    
-    const response = await axios.post(
-      'https://graphql.anilist.co',
-      { query, variables: { id: parseInt(id) } },
-      { 
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 10000
+  let retries = 3;
+  let lastError;
+
+  while (retries > 0) {
+    try {
+      console.log(`📤 AniList Single Manga Request - ID: ${id} (Attempt ${4 - retries}/3)`);
+      
+      const response = await axios.post(
+        'https://graphql.anilist.co',
+        { query, variables: { id: parseInt(id) } },
+        { 
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 15000
+        }
+      );
+
+      if (response.data.errors) {
+        console.error('❌ AniList GraphQL error:', JSON.stringify(response.data.errors, null, 2));
+        lastError = new Error(JSON.stringify(response.data.errors));
+        retries--;
+        if (retries > 0) await new Promise(r => setTimeout(r, 1000 * (4 - retries)));
+        continue;
       }
-    );
 
-    if (response.data.errors) {
-      console.error('❌ AniList GraphQL error:', JSON.stringify(response.data.errors, null, 2));
-      return null;
+      const m = response.data.data.Media;
+      if (!m) {
+        console.warn('⚠️ Manga not found for ID:', id);
+        return null;
+      }
+
+      console.log('✅ Fetched manga:', m.title.english || m.title.romaji);
+
+      return {
+        id: m.id.toString(),
+        title: m.title.english || m.title.romaji || 'Unknown',
+        cover: m.coverImage.large,
+        description: m.description || '',
+        genres: m.genres || [],
+        status: m.status || 'UNKNOWN',
+        averageScore: m.averageScore || 0,
+        chapters: m.chapters || 0,
+        volumes: m.volumes || 0,
+        author: 'AniList',
+        anilistId: m.id,
+        startDate: m.startDate
+      };
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ AniList fetch error (Attempt ${4 - retries}/3):`, error.message);
+      retries--;
+      
+      if (retries > 0) {
+        const delay = 1000 * (4 - retries);
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
     }
-
-    const m = response.data.data.Media;
-    if (!m) {
-      console.warn('⚠️ Manga not found for ID:', id);
-      return null;
-    }
-
-    console.log('✅ Fetched manga:', m.title.english || m.title.romaji);
-
-    return {
-      id: m.id.toString(),
-      title: m.title.english || m.title.romaji || 'Unknown',
-      cover: m.coverImage.large,
-      description: m.description || '',
-      genres: m.genres || [],
-      status: m.status || 'UNKNOWN',
-      averageScore: m.averageScore || 0,
-      chapters: m.chapters || 0,
-      volumes: m.volumes || 0,
-      author: 'AniList',
-      anilistId: m.id,
-      startDate: m.startDate
-    };
-  } catch (error) {
-    console.error('❌ AniList fetch error:', error.message);
-    if (error.response) {
-      console.error('Response status:', error.response.status);
-      console.error('Response data:', error.response.data);
-    }
-    return null;
   }
+
+  console.error('❌ Failed to fetch manga after 3 attempts:', lastError?.message);
+  return null;
 }
 
 // ============ End of AniList Helpers ============
@@ -300,6 +319,37 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization'],
   exposedHeaders: ['Content-Type', 'Content-Length'],
   credentials: true
+}));
+
+// Configure Helmet with CSP
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://graphql.anilist.co"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      fontSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "http://localhost:3001", "http://127.0.0.1:3001", "https://graphql.anilist.co", "https://api.mangadex.org", "http://localhost:8080"],
+      frameSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", "http:", "https:"],
+      childSrc: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year in seconds
+    includeSubDomains: true,
+    preload: false
+  },
+  frameguard: {
+    action: 'deny'
+  },
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  }
 }));
 
 // Enable CORS for image requests
@@ -714,6 +764,109 @@ app.get('/api/mangas', async (req, res) => {
   }
 });
 
+// AniList proxy endpoint for frontend
+app.post('/api/anilist/media', async (req, res) => {
+  const { mediaId, type = 'MANGA' } = req.body;
+
+  console.log('📨 /api/anilist/media request received');
+  console.log('   mediaId:', mediaId, 'type:', typeof mediaId);
+  console.log('   type:', type);
+
+  if (!mediaId) {
+    console.warn('❌ mediaId is missing');
+    return res.status(400).json({ error: 'mediaId is required' });
+  }
+
+  const numericId = parseInt(mediaId);
+  if (isNaN(numericId)) {
+    console.warn('❌ mediaId is not a valid number:', mediaId);
+    return res.status(400).json({ error: 'mediaId must be a number' });
+  }
+
+  const query = `
+    query ($id: Int, $type: MediaType) {
+      Media(id: $id, type: $type) {
+        id
+        siteUrl
+        title {
+          english
+          romaji
+          native
+        }
+        type
+        startDate {
+          year
+          month
+          day
+        }
+        coverImage {
+          large
+          medium
+        }
+        bannerImage
+        description(asHtml: false)
+        genres
+        averageScore
+        meanScore
+        popularity
+        chapters
+        volumes
+        relations {
+          edges {
+            node {
+              id
+              title {
+                english
+                romaji
+              }
+            }
+            relationType
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    console.log(`📤 AniList Proxy Request - Media ID: ${numericId}, Type: ${type}`);
+    
+    const response = await axios.post(
+      'https://graphql.anilist.co',
+      { query, variables: { id: numericId, type } },
+      { 
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 15000
+      }
+    );
+
+    if (response.data.errors) {
+      console.error('❌ AniList GraphQL error:', response.data.errors);
+      return res.status(400).json({ 
+        error: 'AniList API error',
+        details: response.data.errors 
+      });
+    }
+
+    const media = response.data.data?.Media;
+    if (!media) {
+      console.warn(`⚠️ Media not found for ID: ${mediaId}`);
+      return res.status(404).json({ error: 'Media not found on AniList' });
+    }
+
+    console.log(`✅ Fetched media: ${media.title.english || media.title.romaji}`);
+    res.json({
+      data: { Media: media }
+    });
+  } catch (error) {
+    console.error('❌ AniList proxy error:', error.message);
+    console.error('Error details:', error.response?.data || error.stack);
+    res.status(500).json({ 
+      error: 'Failed to fetch from AniList',
+      message: error.message
+    });
+  }
+});
+
 // Get manga status for user
 app.get('/api/manga/:id/status', verifyToken, (req, res) => {
   const { id } = req.params;
@@ -840,7 +993,11 @@ app.get('/api/manga/:id', async (req, res) => {
     const manga = await fetchMangaFromAniList(req.params.id);
     
     if (!manga) {
-      return res.status(404).json({ error: 'Manga not found' });
+      console.log(`📍 Manga ${req.params.id} not found on AniList`);
+      return res.status(404).json({ 
+        error: 'Manga not found',
+        id: req.params.id
+      });
     }
     
     // Get chapters from filesystem if available
@@ -1404,6 +1561,397 @@ app.post('/api/user/avatar-frame', (req, res) => {
     user.avatarFrame = frame;
     writeJSON(usersFile, users);
     res.json({ success: true });
+});
+
+// ============ COMMENTS API ============
+const commentsFile = path.join(baseDir, 'comments.json');
+
+// GET /api/comments?mangaId=... — получить комментарии для манги
+// GET /api/comments — получить комментарии (с фильтром по mangaId или всем)
+app.get('/api/comments', (req, res) => {
+    console.log('GET /api/comments called with query:', req.query);
+    const { mangaId, userId } = req.query;
+    const comments = readJSON(commentsFile);
+    console.log('Total comments in file:', comments.length);
+    
+    // Если передан mangaId, фильтруем по нему
+    if (mangaId) {
+        const filtered = comments.filter(c => c.mangaId === parseInt(mangaId) && c.status === 'visible');
+        return res.json(filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    }
+    
+    // Если передан userId, возвращаем все комментарии этого пользователя
+    if (userId) {
+        console.log('Filtering by userId:', userId);
+        const filtered = comments.filter(c => c.userId === userId && c.status === 'visible');
+        console.log('Filtered comments:', filtered.length);
+        return res.json(filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    }
+    
+    // Если ничего не передано, возвращаем все видимые комментарии
+    const allVisible = comments.filter(c => c.status === 'visible');
+    res.json(allVisible.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+});
+
+// POST /api/comments — добавить комментарий
+app.post('/api/comments', verifyToken, (req, res) => {
+    const { mangaId, content, rating } = req.body;
+    
+    if (!mangaId || !content) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    if (content.length > 500) {
+        return res.status(400).json({ error: 'Comment too long' });
+    }
+    
+    const comments = readJSON(commentsFile);
+    const newComment = {
+        id: Math.max(...comments.map(c => c.id || 0), 0) + 1,
+        mangaId: parseInt(mangaId),
+        userId: req.user.id,
+        username: req.user.username,
+        content,
+        rating: rating && rating >= 1 && rating <= 10 ? parseInt(rating) : null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'visible',
+        likes: 0
+    };
+    
+    comments.push(newComment);
+    writeJSON(commentsFile, comments);
+    res.status(201).json(newComment);
+});
+
+// DELETE /api/comments/:id — удалить комментарий
+app.delete('/api/comments/:id', verifyToken, (req, res) => {
+    const { id } = req.params;
+    const comments = readJSON(commentsFile);
+    const comment = comments.find(c => c.id === parseInt(id));
+    
+    if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    if (comment.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    comment.status = 'deleted';
+    writeJSON(commentsFile, comments);
+    res.json({ message: 'Comment deleted' });
+});
+
+// PATCH /api/comments/:id — обновить комментарий
+app.patch('/api/comments/:id', verifyToken, (req, res) => {
+    const { id } = req.params;
+    const { content, rating } = req.body;
+    
+    const comments = readJSON(commentsFile);
+    const comment = comments.find(c => c.id === parseInt(id));
+    
+    if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    if (comment.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    if (content && content.length <= 500) {
+        comment.content = content;
+    }
+    if (rating && rating >= 1 && rating <= 10) {
+        comment.rating = parseInt(rating);
+    }
+    
+    comment.updatedAt = new Date().toISOString();
+    writeJSON(commentsFile, comments);
+    res.json(comment);
+});
+
+// POST /api/comments/reply — добавить ответ на комментарий
+app.post('/api/comments/reply', verifyToken, (req, res) => {
+    const { mangaId, parentId, content } = req.body;
+    
+    if (!parentId || !content || !mangaId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    if (content.length > 300) {
+        return res.status(400).json({ error: 'Reply too long' });
+    }
+    
+    const comments = readJSON(commentsFile);
+    const parentComment = comments.find(c => c.id === parseInt(parentId) && c.mangaId === parseInt(mangaId));
+    
+    if (!parentComment) {
+        return res.status(404).json({ error: 'Parent comment not found' });
+    }
+    
+    if (!parentComment.replies) {
+        parentComment.replies = [];
+    }
+    
+    const newReply = {
+        id: Math.max(...(parentComment.replies.map(r => r.id || 0)), 0) + 1,
+        userId: req.user.id,
+        username: req.user.username,
+        content,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    parentComment.replies.push(newReply);
+    writeJSON(commentsFile, comments);
+    res.status(201).json(parentComment);
+});
+
+// DELETE /api/comments/:commentId/replies/:replyId — удалить ответ
+app.delete('/api/comments/:commentId/replies/:replyId', verifyToken, (req, res) => {
+    const { commentId, replyId } = req.params;
+    const comments = readJSON(commentsFile);
+    const comment = comments.find(c => c.id === parseInt(commentId));
+    
+    if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    if (!comment.replies) {
+        return res.status(404).json({ error: 'Reply not found' });
+    }
+    
+    const reply = comment.replies.find(r => r.id === parseInt(replyId));
+    
+    if (!reply) {
+        return res.status(404).json({ error: 'Reply not found' });
+    }
+    
+    if (reply.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    comment.replies = comment.replies.filter(r => r.id !== parseInt(replyId));
+    writeJSON(commentsFile, comments);
+    res.json(comment);
+});
+
+// ============ DISCOGS API ============
+
+// GET /api/discogs/search - поиск по Discogs
+app.get('/api/discogs/search', async (req, res) => {
+    const { q, type = 'release', page = 1, per_page = 20 } = req.query;
+    
+    if (!q) {
+        return res.status(400).json({ error: 'Missing query parameter' });
+    }
+    
+    const result = await discogsClient.searchDiscogs(q, type, page, per_page);
+    res.json(result);
+});
+
+// GET /api/discogs/artist/:id - информация об артисте
+app.get('/api/discogs/artist/:id', async (req, res) => {
+    const { id } = req.params;
+    const result = await discogsClient.getArtist(id);
+    
+    if (!result.success) {
+        return res.status(404).json(result);
+    }
+    
+    res.json(result);
+});
+
+// GET /api/discogs/artist/:id/releases - релизы артиста
+app.get('/api/discogs/artist/:id/releases', async (req, res) => {
+    const { id } = req.params;
+    const { page = 1, per_page = 50 } = req.query;
+    
+    const result = await discogsClient.getArtistReleases(id, page, per_page);
+    res.json(result);
+});
+
+// GET /api/discogs/release/:id - информация о релизе
+app.get('/api/discogs/release/:id', async (req, res) => {
+    const { id } = req.params;
+    const result = await discogsClient.getRelease(id);
+    
+    if (!result.success) {
+        return res.status(404).json(result);
+    }
+    
+    res.json(result);
+});
+
+// GET /api/discogs/release/:id/tracks - треклист релиза
+app.get('/api/discogs/release/:id/tracks', async (req, res) => {
+    const { id } = req.params;
+    const result = await discogsClient.getReleaseTracks(id);
+    
+    if (!result.success) {
+        return res.status(404).json(result);
+    }
+    
+    res.json(result);
+});
+
+// GET /api/discogs/master/:id - мастер-релиз
+app.get('/api/discogs/master/:id', async (req, res) => {
+    const { id } = req.params;
+    const result = await discogsClient.getMasterRelease(id);
+    
+    if (!result.success) {
+        return res.status(404).json(result);
+    }
+    
+    res.json(result);
+});
+
+// GET /api/discogs/master/:id/versions - версии мастер-релиза
+app.get('/api/discogs/master/:id/versions', async (req, res) => {
+    const { id } = req.params;
+    const { page = 1 } = req.query;
+    
+    const result = await discogsClient.getMasterVersions(id, page);
+    res.json(result);
+});
+
+// GET /api/discogs/genres - получить жанры
+app.get('/api/discogs/genres', async (req, res) => {
+    const result = await discogsClient.getGenres();
+    res.json(result);
+});
+
+// ============ MUSIC LIBRARY ============
+const musicLibraryFile = path.join(baseDir, 'music-library.json');
+
+// Middleware для опциональной верификации токена
+const optionalVerifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        req.user = null;
+        return next();
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        req.user = null;
+        next();
+    }
+};
+
+// GET /api/users/:userId/music-library - получить музыкальную библиотеку пользователя
+app.get('/api/users/:userId/music-library', optionalVerifyToken, (req, res) => {
+    const { userId } = req.params;
+    
+    // Если пользователь не авторизирован, возвращаем публичную библиотеку (если есть)
+    // Если авторизирован, но не его ID - проверяем права
+    if (req.user && req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    const library = readJSON(musicLibraryFile);
+    const userLibrary = library.filter(item => item.userId === userId);
+    res.json(userLibrary);
+});
+
+// POST /api/users/:userId/music-library - добавить альбом в библиотеку
+app.post('/api/users/:userId/music-library', verifyToken, (req, res) => {
+    const { userId } = req.params;
+    
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    const { discogs_id, title, artist, image, year, added_at } = req.body;
+    
+    if (!discogs_id || !title) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const library = readJSON(musicLibraryFile);
+    
+    // Проверяем, не добавлен ли уже этот альбом
+    const exists = library.some(item => item.userId === userId && item.discogs_id === discogs_id);
+    if (exists) {
+        return res.status(400).json({ error: 'Album already in library' });
+    }
+    
+    const newItem = {
+        id: Math.max(...(library.map(i => i.id || 0)), 0) + 1,
+        userId,
+        discogs_id: parseInt(discogs_id),
+        title,
+        artist: artist || 'Unknown',
+        image: image || null,
+        year: year || null,
+        added_at: added_at || new Date().toISOString(),
+        rating: null,
+        notes: ''
+    };
+    
+    library.push(newItem);
+    writeJSON(musicLibraryFile, library);
+    res.status(201).json(newItem);
+});
+
+// DELETE /api/users/:userId/music-library/:releaseId - удалить альбом из библиотеки
+app.delete('/api/users/:userId/music-library/:releaseId', verifyToken, (req, res) => {
+    const { userId, releaseId } = req.params;
+    
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    const library = readJSON(musicLibraryFile);
+    const itemIndex = library.findIndex(
+        item => item.userId === userId && item.discogs_id === parseInt(releaseId)
+    );
+    
+    if (itemIndex === -1) {
+        return res.status(404).json({ error: 'Album not found' });
+    }
+    
+    library.splice(itemIndex, 1);
+    writeJSON(musicLibraryFile, library);
+    res.json({ message: 'Album removed' });
+});
+
+// PATCH /api/users/:userId/music-library/:releaseId - обновить информацию об альбоме
+app.patch('/api/users/:userId/music-library/:releaseId', verifyToken, (req, res) => {
+    const { userId, releaseId } = req.params;
+    const { rating, notes } = req.body;
+    
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    const library = readJSON(musicLibraryFile);
+    const item = library.find(i => i.userId === userId && i.discogs_id === parseInt(releaseId));
+    
+    if (!item) {
+        return res.status(404).json({ error: 'Album not found' });
+    }
+    
+    if (rating !== undefined && rating >= 0 && rating <= 10) {
+        item.rating = rating;
+    }
+    if (notes !== undefined) {
+        item.notes = notes.substring(0, 500); // Макс 500 символов
+    }
+    
+    writeJSON(musicLibraryFile, library);
+    res.json(item);
 });
 
 // Start the server

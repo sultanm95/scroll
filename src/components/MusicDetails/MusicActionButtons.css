@@ -1,0 +1,54 @@
+.music-action-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, rgba(255, 76, 76, 0.2), rgba(255, 120, 100, 0.1));
+  color: rgba(255, 76, 76, 0.8);
+  border-color: rgba(255, 76, 76, 0.2);
+}
+
+.add-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 76, 76, 0.3), rgba(255, 120, 100, 0.2));
+  border-color: rgba(255, 76, 76, 0.3);
+  color: rgba(255, 76, 76, 1);
+}
+
+.music-remove-btn {
+  background: linear-gradient(135deg, rgba(255, 76, 76, 0.2), rgba(255, 120, 100, 0.1));
+  color: rgba(255, 76, 76, 0.8);
+  border-color: rgba(255, 76, 76, 0.2);
+}
+
+.music-remove-btn:hover {
+  background: rgba(255, 76, 76, 0.3);
+  border-color: rgba(255, 76, 76, 0.5);
+  color: rgba(255, 76, 76, 1);
+}
+
+.disabled-btn {
+  background: var(--border);
+  color: var(--text-muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -25,6 +25,23 @@ const MangaActionButtons = ({ mangaId, mangaData }) => {
     }
   }, [user?.id, mangaId]);
 
+  // Закрытие модалки на Esc
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showStatusModal) {
+        setShowStatusModal(false);
+      }
+    };
+
+    if (showStatusModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showStatusModal]);
+
   const loadMangaStatus = async () => {
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -67,7 +84,14 @@ const MangaActionButtons = ({ mangaId, mangaData }) => {
   };
 
   const handleReadClick = () => {
-    navigate(`/reader/${mangaId}/1`);
+    // Prefer using the manga's title for search-based reader. Fall back to ID if title missing.
+    const title = mangaData?.title?.romaji || mangaData?.title?.english || mangaData?.title || '';
+    if (title) {
+      navigate(`/reader-search?title=${encodeURIComponent(title)}`);
+    } else {
+      // fallback: navigate to old reader route if exists
+      navigate(`/reader/${mangaId}/1`);
+    }
   };
 
   const handleFavoriteClick = async () => {
@@ -136,28 +160,47 @@ const MangaActionButtons = ({ mangaId, mangaData }) => {
         coverImage: { large: '' }
       };
 
-      const response = await fetch(`http://localhost:3001/api/users/${user.id}/list`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          mangaId: parseInt(mangaId),
-          status,
-          manga: mangaToSend
-        })
-      });
+      // Если тот же статус - удаляем из списка
+      if (currentStatus === status) {
+        const response = await fetch(`http://localhost:3001/api/users/${user.id}/list/${parseInt(mangaId)}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to update reading status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Failed to remove from list: ${response.status}`);
+        }
+
+        setCurrentStatus(null);
+      } else {
+        // Иначе добавляем/обновляем статус
+        const response = await fetch(`http://localhost:3001/api/users/${user.id}/list`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            mangaId: parseInt(mangaId),
+            status,
+            manga: mangaToSend
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update reading status: ${response.status}`);
+        }
+
+        setCurrentStatus(status);
       }
 
-      setCurrentStatus(status);
       setShowStatusModal(false);
     } catch (error) {
       console.error('Error updating reading status:', error);
-      alert('Ошибка при добавлении в список');
+      alert('Ошибка при изменении статуса');
     } finally {
       setLoading(false);
     }
@@ -173,33 +216,50 @@ const MangaActionButtons = ({ mangaId, mangaData }) => {
         Читать
       </button>
       
-      <button 
-        className={`favorite-button ${isFavorite ? 'active' : ''}`}
-        onClick={handleFavoriteClick}
-        disabled={loading}
-        title={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
-      >
-        <svg 
-          viewBox="0 0 24 24" 
-          fill={isFavorite ? 'currentColor' : 'none'}
-          stroke="currentColor" 
-          strokeWidth="2"
+      <div className="bottom-buttons">
+        <button 
+          className={`favorite-button ${isFavorite ? 'active' : ''}`}
+          onClick={handleFavoriteClick}
+          disabled={loading}
+          title={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
         >
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-      </button>
+          <svg 
+            viewBox="0 0 24 24" 
+            fill={isFavorite ? 'currentColor' : 'none'}
+            stroke="currentColor" 
+            strokeWidth="2"
+          >
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </button>
 
-      <button 
-        className="status-button"
-        onClick={() => setShowStatusModal(true)}
-        disabled={loading}
-      >
-        {currentStatus ? statusOptions.find(s => s.id === currentStatus)?.label : 'Добавить в список'}
-      </button>
+        <button 
+          className="status-button"
+          onClick={() => setShowStatusModal(true)}
+          disabled={loading}
+        >
+          {currentStatus ? statusOptions.find(s => s.id === currentStatus)?.label : 'В список'}
+        </button>
+      </div>
 
       {showStatusModal && (
-        <div className="status-modal">
+        <div 
+          className="status-modal"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowStatusModal(false);
+            }
+          }}
+        >
           <div className="status-modal-content">
+            <button 
+              className="close-modal"
+              onClick={() => setShowStatusModal(false)}
+              disabled={loading}
+              title="Закрыть (Esc)"
+            >
+              ✕
+            </button>
             <h3>Выберите статус</h3>
             {statusOptions.map(option => (
               <button
@@ -211,13 +271,6 @@ const MangaActionButtons = ({ mangaId, mangaData }) => {
                 {option.label}
               </button>
             ))}
-            <button 
-              className="close-modal"
-              onClick={() => setShowStatusModal(false)}
-              disabled={loading}
-            >
-              Закрыть
-            </button>
           </div>
         </div>
       )}

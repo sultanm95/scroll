@@ -4,6 +4,12 @@
   z-index: 1000;
 }
 
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 form {
   display: flex;
   align-items: center;
@@ -14,6 +20,7 @@ form {
   padding: 3px 10px;
   width: 600px;
   transition: all 0.2s ease;
+  flex: 1;
 }
 
 .search-bar:focus-within form {
@@ -50,7 +57,7 @@ form {
   justify-content: center;
   color: var(--text-muted);
   transition: all 0.2s ease;
-  margin-left: auto; /* Прижимает кнопку вправо */
+  margin-left: auto;
 }
 
 .search-button:hover {
@@ -61,6 +68,42 @@ form {
 .search-icon {
   width: 32px;
   height: 32px;
+}
+
+/* Search Mode Toggle */
+.search-mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  color: var(--text-muted);
+}
+
+.mode-btn:hover {
+  background: rgba(255, 76, 76, 0.1);
+  color: var(--text);
+}
+
+.mode-btn.active {
+  background: rgba(255, 76, 76, 0.2);
+  color: rgb(255, 76, 76);
+  border: 1px solid rgba(255, 76, 76, 0.3);
 }
 
 .search-results {
@@ -97,14 +140,39 @@ form {
   border-radius: 6px;
 }
 
-.search-result-info {
+.result-info {
   flex: 1;
+  min-width: 0;
 }
 
-.search-result-title {
+.result-info h3 {
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 4px;
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-subtitle {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0 0 2px 0;
+}
+
+.result-label {
+  color: rgba(255, 76, 76, 0.7);
+  font-size: 0.75rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.result-year,
+.result-format {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 .search-result-year {
@@ -112,13 +180,13 @@ form {
   font-size: 0.875rem;
 }
 
-.no-results {
+.search-no-results {
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
 }
 
-.loading {
+.search-loading {
   padding: 16px;
   text-align: center;
   color: var(--text-muted);

@@ -1,4 +1,294 @@
 .music-page {
   min-height: 100vh;
-  background: var(--background);
+  background: transparent;
+  padding: 20px;
+  position: relative;
+}
+
+/* Кнопка поиска */
+.search-music-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 500;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(255, 76, 76, 0.3);
+}
+
+.search-music-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 76, 76, 0.4);
+}
+
+.search-music-btn:active {
+  transform: translateY(0);
+}
+
+/* Модальное окно поиска */
+.discogs-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.discogs-modal {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 1001;
+}
+
+.close-modal-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.release-modal {
+  padding: 20px;
+}
+
+.back-to-search-btn {
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.back-to-search-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Библиотека */
+.library-container {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.library-container h2 {
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.library-item {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: all 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+
+.library-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.library-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.library-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.library-item:hover .library-cover img {
+  transform: scale(1.05);
+}
+
+.library-info {
+  padding: 12px;
+}
+
+.library-info h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-info p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.year {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 74, 74, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.library-item:hover .remove-btn {
+  opacity: 1;
+}
+
+.remove-btn:hover {
+  background: rgba(255, 74, 74, 1);
+  transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .music-page {
+    padding: 12px;
+  }
+
+  .search-music-btn {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .discogs-overlay {
+    padding: 12px;
+  }
+
+  .discogs-modal {
+    max-height: 95vh;
+  }
+
+  .library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .library-container {
+    padding: 16px;
+    margin-top: 30px;
+  }
+
+  .library-container h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-music-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .discogs-modal {
+    border-radius: 8px;
+  }
+
+  .library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
 }

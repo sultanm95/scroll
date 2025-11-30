@@ -12,7 +12,6 @@ const DEFAULT_GLOW_COLOR = '255, 76, 76'; // #ff4c4c
 const MOBILE_BREAKPOINT = 768;
 
 const generateDefaultCardData = (userData) => {
-  console.log('Generating card data for user:', userData);
   const baseCards = [
 
   ];
@@ -451,7 +450,7 @@ const useMobileDetection = () => {
   return isMobile;
 };
 
-const buildCardData = (userData) => {
+const buildCardData = (userData, playlistData = []) => {
   const defaultMusicCover = 'https://images.genius.com/f2c0421ef6dbcd06eb568d9937b40eac.1000x1000x1.png';
 
   // Первая карточка - текущий трек
@@ -464,24 +463,34 @@ const buildCardData = (userData) => {
     link: '/music'
   };
   const playlistCard = {
-    color: '#1DB954',
+    color: '#060010',
     title: 'My Playlist',
     description: 'Your favorite tracks',
     label: 'Playlist',
     cover: 'https://example.com/playlist-cover.jpg',
     link: '/playlist'
   };
-    const topMusic = {
-    color: '#1DB954',
+  const topMusic = {
+    color: '#060010',
     title: 'Top Charts',
     description: 'The most popular tracks',
     label: 'Charts',
     cover: 'https://example.com/playlist-cover.jpg',
     link: '/charts'
-  }
+  };
+
+  // Четвертая карточка - библиотека/плейлист
+  const libraryCard = {
+    color: '#060010',
+    title: 'My Library',
+    description: 'Your collection',
+    label: 'Library',
+    cover: defaultMusicCover,
+    isLibraryCard: true
+  };
 
   const defaultCards = generateDefaultCardData(userData);
-  return [musicCard,playlistCard, topMusic, ...defaultCards];
+  return [musicCard, playlistCard, topMusic, libraryCard, ...defaultCards];
 };
 
 const MagicBentoMusic = ({
@@ -501,14 +510,114 @@ const MagicBentoMusic = ({
   const gridRef = useRef(null);
   const isMobile = useMobileDetection();
   const { user, loading, signOut } = useAuth();
-  const [cards, setCards] = useState(() => buildCardData(user));
-  const shouldDisableAnimations = disableAnimations || isMobile; // Для отладки
+  const [playlist, setPlaylist] = useState([]);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [albumTracks, setAlbumTracks] = useState([]);
+  const [albumInfo, setAlbumInfo] = useState(null);
+  const [currentTrack, setCurrentTrack] = useState(null);
+  const [cards, setCards] = useState(() => buildCardData(user, []));
+  const shouldDisableAnimations = disableAnimations || isMobile;
 
   useEffect(() => {
     if (!loading) {
-      setCards(buildCardData(user));
+      setCards(buildCardData(user, playlist));
     }
-  }, [user, loading]);
+  }, [user, loading, playlist]);
+
+  useEffect(() => {
+    if (user) {
+      loadUserPlaylist();
+    }
+  }, [user]);
+
+  const loadUserPlaylist = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/music-library`);
+      if (response.ok) {
+        const data = await response.json();
+        setPlaylist(data || []);
+      }
+    } catch (err) {
+      console.error('Error loading playlist:', err);
+    }
+  };
+
+  const loadAlbumTracks = async (discogId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/discogs/release/${discogId}`);
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data || result;
+        const tracks = data.tracklist || data.tracks || [];
+        setAlbumTracks(tracks);
+        setAlbumInfo({
+          title: data.title,
+          artist: data.artists?.[0]?.name || 'Unknown',
+          images: data.images || [],
+          cover: data.images?.[0]?.uri || null
+        });
+        setSelectedAlbum(discogId);
+      } else {
+        console.error('Error response:', response.status);
+      }
+    } catch (err) {
+      console.error('Error loading album tracks:', err);
+    }
+  };
+
+  const handleAddToPlaylist = async (releaseData) => {
+    if (!user) {
+      alert('Пожалуйста, войдите в аккаунт');
+      return;
+    }
+
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/music-library`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          discogs_id: releaseData.id,
+          title: releaseData.title,
+          artist: releaseData.artists?.[0]?.name || 'Unknown',
+          image: releaseData.thumb || releaseData.cover_image,
+          year: releaseData.year || releaseData.basic_information?.year,
+          added_at: new Date().toISOString()
+        })
+      });
+
+      if (response.ok) {
+        alert('✅ Трек добавлен в плейлист!');
+        loadUserPlaylist();
+      } else {
+        alert('Ошибка при добавлении трека');
+      }
+    } catch (err) {
+      console.error('Error adding to playlist:', err);
+      alert('Ошибка при подключении');
+    }
+  };
+
+  const handleTrackPlay = (track, index) => {
+    // Добавляем информацию об альбоме к треку
+    const trackWithAlbumInfo = {
+      ...track,
+      album: {
+        cover_small: albumInfo?.cover || null,
+        title: albumInfo?.title || 'Unknown Album'
+      },
+      artist: {
+        name: albumInfo?.artist || 'Unknown Artist'
+      }
+    };
+    setCurrentTrack(trackWithAlbumInfo);
+  };
 
   return (
     <>
@@ -576,25 +685,449 @@ const MagicBentoMusic = ({
               >
                 {index === 0 ? (
                   <>
+                    {currentTrack ? (
+                      <>
+                        <div 
+                          className="music-card-background" 
+                          style={{ 
+                            backgroundImage: `url(${currentTrack?.album?.cover_small})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            opacity: 0.3
+                          }} 
+                        />
+                        <AlbumCoverPlayer 
+                          size={100}
+                          spinning={true}
+                          speed={8}
+                          title={currentTrack?.title}
+                          coverUrl={currentTrack?.album?.cover_small}
+                          artist={currentTrack?.artist?.name || currentTrack?.artists?.[0]?.name || ''}
+                        />
+                        <div className="music-card-container">
+                          <DeezerPlayer 
+                            tracks={albumTracks}
+                            onTrackPlay={handleTrackPlay}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: 'var(--muted)'
+                      }}>
+                        <div style={{ fontSize: '14px', textAlign: 'center' }}>
+                          Выберите трек
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : index === 1 ? (
+                  <div 
+                    className="magic-bento-card__content"
+                    style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      overflow: 'auto',
+                      maxHeight: '100%',
+                      width: '100%',
+                      height: '100%',
+                      padding: '12px'
+                    }}
+                  >
+                    {selectedAlbum && albumTracks.length > 0 ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--accent)' }}>
+                            {playlist.find(p => p.discogs_id === selectedAlbum)?.title}
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedAlbum(null);
+                              setAlbumTracks([]);
+                            }}
+                            style={{
+                              padding: '4px 12px',
+                              background: 'rgba(255, 76, 76, 0.2)',
+                              color: 'var(--accent)',
+                              border: '1px solid var(--accent)',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.2)';
+                            }}
+                          >
+                            ← Назад
+                          </button>
+                        </div>
+                        {albumTracks.map((track, idx) => (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              handleTrackPlay(track, idx);
+                            }}
+                            style={{
+                              padding: '8px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              color: 'var(--text)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              borderLeft: '2px solid var(--accent)'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.15)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                            }}
+                            title={`${track.position}. ${track.title}`}
+                          >
+                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>
+                              {track.position}. {track.title}
+                            </div>
+                            {track.artists && track.artists.length > 0 && (
+                              <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
+                                {track.artists.map(a => a.name).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                        Выберите альбом
+                      </div>
+                    )}
+                  </div>
+                ) : index === 2 ? (
+                  <>
                     <div 
-                      className="music-card-background" 
+                      className="magic-bento-card__header"
+                      onClick={() => {
+                        console.log('Clicked on card:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
+                      <div className="magic-bento-card__label">{card.label}</div>
+                    </div>
+                    <div 
+                      className="magic-bento-card__content"
+                      onClick={() => {
+                        console.log('Clicked on card content:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
+                      <h2 className="magic-bento-card__title">{card.title}</h2>
+                      <p className="magic-bento-card__description">{card.description}</p>
+                    </div>
+                  </>
+                ) : index === 3 ? (
+                  <div 
+                    className="magic-bento-card__content library-content"
+                    style={{ 
+                      display: 'flex',
+                      gap: '0',
+                      overflow: 'hidden',
+                      maxHeight: '100%',
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  >
+                    {selectedAlbum && albumTracks.length > 0 ? (
+                      <>
+                        {/* Полноэкранный альбом */}
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '16px',
+                          padding: '16px',
+                          background: 'rgba(0, 0, 0, 0.3)',
+                          backdropFilter: 'blur(8px)',
+                          zIndex: 10
+                        }}>
+                          {playlist.find(p => p.discogs_id === selectedAlbum) && (
+                            <>
+                              <img 
+                                src={playlist.find(p => p.discogs_id === selectedAlbum).image || 'https://images.genius.com/f2c0421ef6dbcd06eb568d9937b40eac.1000x1000x1.png'}
+                                alt="Album cover"
+                                style={{
+                                  width: '120px',
+                                  height: '120px',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px',
+                                  border: '2px solid var(--accent)',
+                                  boxShadow: '0 8px 24px rgba(255, 76, 76, 0.3)'
+                                }}
+                              />
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: '600', marginBottom: '4px' }}>
+                                  {playlist.find(p => p.discogs_id === selectedAlbum).title}
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                                  {playlist.find(p => p.discogs_id === selectedAlbum).artist}
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  setSelectedAlbum(null);
+                                  setAlbumTracks([]);
+                                }}
+                                style={{
+                                  padding: '8px 16px',
+                                  background: 'var(--accent)',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1.05)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                              >
+                                Закрыть
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Список треков справа */}
+                        <div style={{
+                          position: 'absolute',
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: '40%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px',
+                          overflow: 'auto',
+                          padding: '8px',
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          backdropFilter: 'blur(4px)'
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--accent)', marginBottom: '4px' }}>
+                            Треки ({albumTracks.length})
+                          </div>
+                          {albumTracks.map((track, idx) => (
+                            <div 
+                              key={idx}
+                              style={{
+                                padding: '6px 8px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                                color: 'var(--text)',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 76, 76, 0.2)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                              }}
+                              title={`${track.position}. ${track.title}`}
+                            >
+                              <span style={{ color: 'var(--muted)', marginRight: '4px' }}>{track.position}.</span>
+                              {track.title}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      /* Сетка альбомов по умолчанию */
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                        gap: '8px',
+                        overflow: 'auto',
+                        maxHeight: '100%',
+                        padding: '8px 0',
+                        width: '100%'
+                      }}>
+                        {playlist.map((item) => (
+                          <div 
+                            key={item.discogs_id}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              textAlign: 'center',
+                              border: selectedAlbum === item.discogs_id ? '2px solid var(--accent)' : '1px solid transparent'
+                            }}
+                            onClick={() => loadAlbumTracks(item.discogs_id)}
+                            onDoubleClick={() => navigate(`/music/${item.discogs_id}`)}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.15)';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <img 
+                              src={item.image || 'https://images.genius.com/f2c0421ef6dbcd06eb568d9937b40eac.1000x1000x1.png'}
+                              alt={item.title}
+                              style={{
+                                width: '100%',
+                                aspectRatio: '1',
+                                objectFit: 'cover',
+                                borderRadius: '3px',
+                                border: '1px solid rgba(255, 76, 76, 0.3)'
+                              }}
+                            />
+                            <div style={{ fontSize: '10px', color: 'var(--text)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                              {item.title}
+                            </div>
+                            <div style={{ fontSize: '9px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                              {item.artist}
+                            </div>
+                          </div>
+                        ))}
+                        {playlist.length === 0 && (
+                          <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                            Плейлист пуст
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : index === 1 ? (
+                  <>
+                    <div 
+                      className="magic-bento-card__header"
+                      style={{ cursor: 'default' }}
+                    >
+                      <div className="magic-bento-card__label">{card.label}</div>
+                    </div>
+                    <div 
+                      className="magic-bento-card__content"
                       style={{ 
-                        backgroundImage: `url(${card.cover})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat',
-                        opacity: 0.3
-                      }} 
-                    />
-                    <AlbumCoverPlayer 
-                      size={100}
-                      spinning={true}
-                      speed={8}
-                      title={card.title}
-                      coverUrl={card.cover}
-                    />
-                    <div className="music-card-container">
-                      <DeezerPlayer />
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        overflow: 'auto',
+                        maxHeight: '100%'
+                      }}
+                    >
+                      {selectedAlbum && albumTracks.length > 0 ? (
+                        <>
+                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--accent)', marginBottom: '4px' }}>
+                            {playlist.find(p => p.discogs_id === selectedAlbum)?.title}
+                          </div>
+                          {albumTracks.map((track, idx) => (
+                            <div 
+                              key={idx}
+                              style={{
+                                padding: '8px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                color: 'var(--text)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                borderLeft: '2px solid var(--accent)'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 76, 76, 0.15)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                              }}
+                              title={`${track.position}. ${track.title}`}
+                            >
+                              <div style={{ fontWeight: '600', color: 'var(--text)' }}>
+                                {track.position}. {track.title}
+                              </div>
+                              {track.artists && track.artists.length > 0 && (
+                                <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
+                                  {track.artists.map(a => a.name).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                          Выберите альбом слева
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : index === 2 ? (
+                  <>
+                    <div 
+                      className="magic-bento-card__header"
+                      onClick={() => {
+                        console.log('Clicked on card:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
+                      <div className="magic-bento-card__label">{card.label}</div>
+                    </div>
+                    <div 
+                      className="magic-bento-card__content"
+                      onClick={() => {
+                        console.log('Clicked on card content:', card.title);
+                        if (card.link) {
+                          console.log('Navigating to:', card.link);
+                          navigate(card.link);
+                        }
+                      }}
+                      style={{ cursor: card.link ? 'pointer' : 'default' }}
+                    >
+                      <h2 className="magic-bento-card__title">{card.title}</h2>
+                      <p className="magic-bento-card__description">{card.description}</p>
                     </div>
                   </>
                 ) : (
@@ -771,6 +1304,8 @@ const MagicBentoMusic = ({
           );
         })}
       </BentoCardGrid>
+
+
     </>
   );
 };

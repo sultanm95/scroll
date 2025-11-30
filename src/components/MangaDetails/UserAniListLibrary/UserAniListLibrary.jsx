@@ -124,7 +124,7 @@ export default function UserAniListLibrary({ username, userId }) {
   }
 
   function openManga(id) {
-    window.location.href = `/manga?id=${id}`;
+    window.location.href = `/manga/${id}`;
   }
 
   if (loading) return <div className="user-anilist-library">Загрузка библиотеки...</div>;

@@ -1,0 +1,410 @@
+.manga-comments {
+  margin-top: 50px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.manga-comments h3 {
+  margin: 0 0 24px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Oswald';
+}
+
+/* === ФОРМА КОММЕНТАРИЯ === */
+.comment-form {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-group label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rating-select {
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.comment-textarea {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.char-count {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === АУТЕНТИФИКАЦИЯ === */
+.auth-required {
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-required p {
+  color: var(--muted);
+  margin: 0;
+}
+
+/* === СПИСОК КОММЕНТАРИЕВ === */
+.loading,
+.no-comments {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-item {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  transition: border-color 0.2s;
+}
+
+.comment-item:hover {
+  border-color: var(--accent);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rating {
+  color: #ff9500;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(255, 149, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.date {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.comment-content {
+  margin: 12px 0;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.reply-btn,
+.edit-btn,
+.delete-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+  color: var(--text);
+}
+
+.reply-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reply-btn:hover {
+  background: rgba(255, 76, 76, 0.1);
+}
+
+.edit-btn {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.edit-btn:hover {
+  background: rgba(255, 76, 76, 0.1);
+}
+
+.delete-btn {
+  color: #ff4a4a;
+  border-color: #ff4a4a;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 74, 74, 0.1);
+}
+
+/* === РЕДАКТИРОВАНИЕ === */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-form textarea {
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.save-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.save-btn:hover {
+  opacity: 0.9;
+}
+
+.cancel-btn {
+  background: var(--border);
+  color: var(--text);
+}
+
+.cancel-btn:hover {
+  opacity: 0.7;
+}
+
+/* === ОТВЕТЫ === */
+.reply-form {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--card);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-textarea {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.reply-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.reply-submit-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+  width: fit-content;
+}
+
+.reply-submit-btn:hover {
+  opacity: 0.9;
+}
+
+.replies-list {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-item {
+  padding: 10px 12px;
+  background: var(--card);
+  border-radius: 6px;
+  border-left: 2px solid var(--accent);
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reply-username {
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.reply-date {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.reply-content {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 6px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.delete-reply-btn {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text);
+  transition: 0.2s;
+}
+
+.delete-reply-btn:hover {
+  background: #ff4a4a;
+  border-color: #ff4a4a;
+  color: white;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+  .manga-comments {
+    padding: 16px;
+  }
+
+  .comment-form {
+    padding: 16px;
+  }
+
+  .comment-header {
+    flex-direction: column;
+  }
+
+  .comment-actions {
+    flex-wrap: wrap;
+  }
+
+  .comment-item {
+    padding: 12px;
+  }
+}

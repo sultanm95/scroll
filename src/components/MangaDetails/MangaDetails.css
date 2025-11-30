@@ -1,18 +1,20 @@
 .manga-details-page {
-  min-height: 100vh;
   background: transparent;
-  padding-top: 2rem;
+  padding-top: 0;
 }
-
 .manga-details-page:has(.banner-container) {
   padding-top: 0;
 }
 
 .banner-container {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  height: 350px;
+  height: 300px;
   overflow: hidden;
+  z-index: 0;
 }
 
 .banner-container::after {
@@ -22,7 +24,7 @@
   left: 0;
   right: 0;
   height: 150px;
-  background:transparent;  
+  background: linear-gradient(to bottom, transparent, rgba(6, 0, 16, 0.5));
 }
 
 .banner-image {
@@ -32,137 +34,304 @@
 }
 
 .manga-details-content {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 40px 20px;
   position: relative;
   z-index: 1;
 }
 
 .manga-details-content.with-banner {
-  margin-top: -100px;
+  padding-top: 180px;
 }
 
 .manga-main-info {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 30px;
-  margin-bottom: 40px;
-  color: transparent;
+  grid-template-columns: 280px 1fr;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.manga-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .manga-cover {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
 }
 
 .cover-image {
   width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  margin-bottom: 12px;
 }
+
+/* УДАЛЕНО ВСЁ: .manga-action-buttons, .read-button, .favorite-button,
+   .favorite-button svg, .favorite-button.active, .status-button, etc */
+
+/* Остальное — безопасные стили */
 
 .manga-info {
   color: var(--text);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.probel {
+  color: transparent;
+  font-size: 40px;
 }
 
 .manga-info h1 {
-  margin: 0 0 10px;
-  font-size: 2.5rem;
+  margin: 0 0 8px;
+  font-size: 2.2rem;
+  font-weight: 700;
   color: var(--text);
 }
 
 .native-title {
   margin: 0 0 20px;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: var(--muted);
+  font-weight: 500;
+}
+
+.author-name {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 400;
+  font-style: italic;
 }
 
 .manga-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .stat {
-  background: var(--surface);
-  padding: 12px;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .stat .label {
-  display: block;
   color: var(--muted);
-  font-size: 0.9rem;
-  margin-bottom: 4px;
+  font-size: 0.95rem;
 }
 
 .stat .value {
   font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text);
 }
 
 .manga-genres {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .genre-tag {
-  background: var(--surface);
+  position: relative;
+  background: rgba(255, 76, 76, 0.1);
   color: var(--text);
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 16px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 76, 76, 0.3);
 }
 
 .manga-description {
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  max-height: 300px;
+  overflow-y: auto;
+  text-overflow: ellipsis;
+  order: 5;
+}
+
+/* Tabs */
+.manga-tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+  order: 4;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-family: 'Oswald';
+  font-size: 1rem;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+  background: rgba(255, 76, 76, 0.05);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease-in-out;
+  order: 5;
+}
+
+.characters-tab {
   margin-bottom: 30px;
 }
 
-.manga-characters, .manga-recommendations {
-  margin-bottom: 40px;
+.recommendations-tab {
+  margin-bottom: 30px;
 }
 
-.manga-characters h3, .manga-recommendations h3 {
+.reviews-tab {
+  margin-bottom: 30px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sections */
+.manga-section {
+  margin-bottom: 50px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
-  font-size: 1.5rem;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
   color: var(--text);
+  font-weight: 600;
 }
 
-.characters-grid, .recommendations-grid {
+.section-count {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.see-more {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.see-more:hover {
+  opacity: 0.7;
+}
+
+/* Characters */
+.characters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
 }
 
-.character-card, .recommendation-card {
-  background: var(--surface);
-  border-radius: 8px;
+.character-card {
+  background: var(--card);
+  border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--border);
 }
 
-.character-card:hover, .recommendation-card:hover {
-  transform: translateY(-5px);
+.character-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.character-card img, .recommendation-card img {
+.character-card img {
   width: 100%;
   aspect-ratio: 2/3;
   object-fit: cover;
 }
 
-.character-card p, .recommendation-card p {
+.character-name {
   padding: 10px;
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text);
   text-align: center;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Recommendations */
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.recommendation-card {
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.recommendation-card img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.recommendation-card p {
+  padding: 10px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.3;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .manga-details-loading,
@@ -191,46 +360,19 @@
   opacity: 0.9;
 }
 
-.read-manga-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: background 0.2s;
-}
-
-.read-manga-button:hover {
-  background: var(--accent-hover);
-}
-
-.manga-reader-container {
-  margin-top: 30px;
-  padding: 20px;
-  background: var(--surface);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
 @media (max-width: 900px) {
   .manga-main-info {
     grid-template-columns: 1fr;
+    gap: 30px;
   }
 
   .manga-cover {
-    max-width: 300px;
+    max-width: 280px;
     margin: 0 auto;
   }
 
-  .banner-container {
-    height: 250px;
-  }
-
-  .manga-details-content {
-    margin-top: -50px;
+  .manga-info h1 {
+    font-size: 1.8rem;
   }
 }
 
@@ -239,15 +381,26 @@
     height: 200px;
   }
 
+  .manga-cover {
+    max-width: 200px;
+  }
+
   .manga-info h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .manga-stats {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .characters-grid, .recommendations-grid {
+  .characters-grid,
+  .recommendations-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .manga-details-content {
+    margin-top: -40px;
   }
 }

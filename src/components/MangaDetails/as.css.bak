@@ -1,0 +1,253 @@
+.manga-details-page {
+  min-height: 100vh;
+  background: transparent;
+  padding-top: 2rem;
+}
+
+.manga-details-page:has(.banner-container) {
+  padding-top: 0;
+}
+
+.banner-container {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+}
+
+.banner-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background:transparent;  
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.manga-details-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.manga-details-content.with-banner {
+  margin-top: -100px;
+}
+
+.manga-main-info {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+  color: transparent;
+}
+
+.manga-cover {
+  position: relative;
+}
+
+.cover-image {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.manga-info {
+  color: var(--text);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.manga-info h1 {
+  margin: 0 0 10px;
+  font-size: 2.5rem;
+  color: var(--text);
+}
+
+.native-title {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+
+.manga-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.stat .label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.stat .value {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.manga-genres {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.genre-tag {
+  background: var(--surface);
+  color: var(--text);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+}
+
+.manga-description {
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.manga-characters, .manga-recommendations {
+  margin-bottom: 40px;
+}
+
+.manga-characters h3, .manga-recommendations h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.characters-grid, .recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.character-card, .recommendation-card {
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.character-card:hover, .recommendation-card:hover {
+  transform: translateY(-5px);
+}
+
+.character-card img, .recommendation-card img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.character-card p, .recommendation-card p {
+  padding: 10px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.manga-details-loading,
+.manga-details-error,
+.manga-details-not-found {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.manga-details-error button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.manga-details-error button:hover {
+  opacity: 0.9;
+}
+
+.read-manga-button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.read-manga-button:hover {
+  background: var(--accent-hover);
+}
+
+.manga-reader-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: var(--surface);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 900px) {
+  .manga-main-info {
+    grid-template-columns: 1fr;
+  }
+
+  .manga-cover {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .banner-container {
+    height: 250px;
+  }
+
+  .manga-details-content {
+    margin-top: -50px;
+  }
+}
+
+@media (max-width: 600px) {
+  .banner-container {
+    height: 200px;
+  }
+
+  .manga-info h1 {
+    font-size: 2rem;
+  }
+
+  .manga-stats {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .characters-grid, .recommendations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

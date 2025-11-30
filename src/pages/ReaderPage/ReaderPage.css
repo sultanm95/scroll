@@ -1,0 +1,25 @@
+.reader-page {
+  padding: 20px;
+}
+.reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.reader-search input {
+  padding: 6px 8px;
+  font-size: 14px;
+}
+.reader-search button {
+  margin-left: 8px;
+  padding: 6px 10px;
+}
+.reader-status { margin: 12px 0; }
+.reader-status.error { color: #e44; }
+.reader-manga-title { margin-top: 8px; }
+.reader-viewer { margin-top: 12px; }
+.reader-controls { display:flex; align-items:center; gap:8px; margin-bottom:8px }
+.reader-image-wrap { text-align:center }
+.reader-image-wrap img { max-width:100%; height:auto; }
+.reader-empty { color: #777; margin-top: 12px }

@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { useAuth } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import MiniMangaCard from '../MangaDetails/MiniMangaCard/MiniMangaCard';
+import ReviewElement from './ReviewElement';
 import './MagicBento.css';
 
 const DEFAULT_PARTICLE_COUNT = 20;
@@ -84,18 +85,25 @@ const updateCardGlowProperties = (card, mouseX, mouseY, glow, radius) => {
   card.style.setProperty('--glow-radius', `${radius}px`);
 };
 const LibraryCardContent = ({ library, navigate }) => {
-  const DISPLAY_COUNT = 10;
+  const DISPLAY_COUNT = 8;
 
   const SECTIONS = [
     { key: "reading", title: "Читаю" },
     { key: "completed", title: "Прочитано" },
     { key: "favorites", title: "Избранное" },
-    { key: "planning", title: "В планах" },
+    { key: "planToRead", title: "В планах" },
     { key: "dropped", title: "Брошенно" },
   ];
 
   return (
-    <div className="library-container">
+    <div className="library-card-content">
+      <div className="library-container">
+      <h3 
+        className="library-title-simple"
+        style={{ cursor: 'pointer' }}
+      >
+        <span onClick={() => navigate('/library')}>Моя библиотека →</span>
+      </h3>
       {SECTIONS.map((section) => {
         const items = library?.[section.key] || [];
 
@@ -103,11 +111,12 @@ const LibraryCardContent = ({ library, navigate }) => {
           <div key={section.key} className="library-section">
             {/* Заголовок */}
             <div className="section-header">
-              <h3 className="section-title">{section.title}</h3>
-
-              {items.length > 0 && (
-                <span className="section-count">{items.length}</span>
-              )}
+              <h3 className="section-title">
+                {section.title}
+                {items.length > 0 && (
+                  <span className="section-count">{items.length}</span>
+                )}
+              </h3>
             </div>
 
             {/* Контент */}
@@ -116,37 +125,123 @@ const LibraryCardContent = ({ library, navigate }) => {
             ) : (
               <div className="section-items">
                 {items.slice(0, DISPLAY_COUNT).map((manga) => (
-                  <div
+                  <MiniMangaCard
                     key={manga.id}
-                    className="manga-card"
-                    onClick={() => navigate(`/manga/${manga.id}`)}
-                  >
-                    <img
-                      src={manga.coverImage?.large}
-                      alt={manga.title?.romaji}
-                      className="manga-img"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://via.placeholder.com/60x86?text=No+Cover";
-                      }}
-                    />
-                  </div>
+                    manga={manga}
+                    onOpen={(id) => navigate(`/manga/${id}`)}
+                  />
                 ))}
 
-                {/* Кнопка "ещё" */}
-                {items.length > DISPLAY_COUNT && (
-                  <div
-                    className="manga-more"
-                    onClick={() => navigate("/library")}
-                  >
-                    +{items.length - DISPLAY_COUNT}
-                  </div>
-                )}
               </div>
             )}
           </div>
         );
       })}
+      </div>
+    </div>
+  );
+};
+
+const ReviewsCardContent = ({ navigate, user }) => {
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserReviews();
+    }
+  }, [user?.id]);
+
+  const loadUserReviews = async () => {
+    try {
+      // Загружаем отзывы из файла comments.json через API с фильтром по userId
+      const response = await fetch(`http://localhost:3001/api/comments?userId=${user.id}`);
+      if (response.ok) {
+        const allComments = await response.json();
+        
+        // Фильтруем только видимые отзывы
+        const userReviews = allComments.filter(comment => 
+          comment.status === 'visible'
+        );
+
+        // Для каждого отзыва загружаем информацию о манге
+        const formattedReviews = await Promise.all(
+          userReviews.map(async (review) => {
+            try {
+              // Получаем информацию о манге по ID
+              const mangaResponse = await fetch(
+                `http://localhost:3001/api/manga/${review.mangaId}`
+              );
+              const mangaData = mangaResponse.ok ? await mangaResponse.json() : {};
+              
+              return {
+                id: review.id,
+                mangaTitle: mangaData.title || 'Unknown Manga',
+                mangaCover: mangaData.cover || mangaData.image || '',
+                rating: review.rating || 0,
+                content: review.content || '',
+                link: `/manga/${review.mangaId}#reviews`,
+                createdAt: review.createdAt
+              };
+            } catch (err) {
+              console.error('Error loading manga data:', err);
+              return {
+                id: review.id,
+                mangaTitle: `Манга #${review.mangaId}`,
+                mangaCover: '',
+                rating: review.rating || 0,
+                content: review.content || '',
+                link: `/manga/${review.mangaId}#reviews`
+              };
+            }
+          })
+        );
+
+        // Сортируем по дате создания (новые первыми)
+        formattedReviews.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
+        setReviews(formattedReviews);
+      }
+    } catch (err) {
+      console.error('Error loading reviews:', err);
+    }
+  };
+
+  return (
+    <div className="reviews-card-content">
+      <h3 
+        className="reviews-title-simple"
+        onClick={() => navigate('/reviews')}
+        style={{ cursor: 'pointer' }}
+      >
+        Последние отзывы →
+      </h3>
+
+      {reviews.length > 0 ? (
+        <div className="reviews-grid">
+          {reviews.slice(0, 4).map((review) => (
+            <ReviewElement 
+              key={review.id}
+              review={review}
+              onNavigate={navigate}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="reviews-empty">
+          <p>Здесь будут ваши отзывы</p>
+          <small>Напишите отзыв о манге</small>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SettingsCardContent = ({ navigate, user }) => {
+  return (
+    <div className="card-content-simple">
+      <h3>Settings</h3> 
     </div>
   );
 };
@@ -651,14 +746,15 @@ const MagicBento = ({
                 {...restCardProps}
                 onClick={() => {
                   console.log('ParticleCard clicked:', card.title);
-                  if (card.link) {
+                  // Клик работает только для профиля (index 0)
+                  if (index === 0 && card.link) {
                     console.log('Navigating to:', card.link);
                     navigate(card.link);
                   }
                 }}
                 style={{
                   ...cardProps.style,
-                  cursor: card.link ? 'pointer' : 'default'
+                  cursor: index === 0 && card.link ? 'pointer' : 'default'
                 }}
                 disableAnimations={shouldDisableAnimations}
                 particleCount={particleCount}
@@ -706,6 +802,14 @@ const MagicBento = ({
                 ) : card.isLibraryCard ? (
                   <>
                     <LibraryCardContent library={card.library} navigate={navigate} />
+                  </>
+                ) : card.label === 'Reviews' ? (
+                  <>
+                    <ReviewsCardContent navigate={navigate} user={user} />
+                  </>
+                ) : card.label === 'Settings' ? (
+                  <>
+                    <SettingsCardContent navigate={navigate} user={user} />
                   </>
                 ) : (
                   <>

@@ -1,18 +1,18 @@
-  import React from "react";
-  import { Link } from "react-router-dom";
-  import { ProfileButton } from "../Auth/ProfileButton";
-  import "./Header.css";
-  import Logo from "../Header/Logo/Logo";
-  import Catalog from "../Catalog/Catalog";
-  import CatalogBtn from "./CatalogBtn";
-  import CardNav from "../CardNav/CardNav";
-  import MusicButton from "./MusicButton/MusicButton";
-  import SearchBar from "./SearchBar/SearchBar";
-  import RandomButton from "./RandomButton/RandomButton";
-  import Border from "../ui/border/border";
-  import AuthModals from "../Auth/AuthModals";
-
-
+import React from "react";
+import { Link } from "react-router-dom";
+import { ProfileButton } from "../Auth/ProfileButton";
+import "./Header.css";
+import Logo from "../Header/Logo/Logo";
+import Catalog from "../Catalog/Catalog";
+import CatalogBtn from "./CatalogBtn";
+import CardNav from "../CardNav/CardNav";
+import MusicButton from "./MusicButton/MusicButton";
+import SearchBar from "./SearchBar/SearchBar";
+import RandomButton from "./RandomButton/RandomButton";
+import ThemeToggle from "./ThemeToggle/ThemeToggle";
+import HamburgerMenu from "./HamburgerMenu/HamburgerMenu";
+import Border from "../ui/border/border";
+import AuthModals from "../Auth/AuthModals";
   function Header() {
     return (
       <header className="header">
@@ -21,17 +21,16 @@
             <Logo />
           </div>
           <div className="left-section">
-            <CatalogBtn />
-            <MusicButton />
-            <SearchBar />
+            <RandomButton />
       </div>
 
       <div className="center-section">
+        <SearchBar />
       </div>
 
       <div className="right-section">
-        <RandomButton />
         <ProfileButton />
+        <HamburgerMenu />
       </div>
     </div>
   </header>

@@ -48,10 +48,167 @@
             "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105398-b673Vt5ZSuz3.jpg"
           },
           "addedDate": "2025-11-24T08:09:55.300Z"
+        },
+        {
+          "id": 87423,
+          "title": {
+            "english": "The Promised Neverland",
+            "romaji": "Yakusoku no Neverland",
+            "native": "約束のネバーランド"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx87423-gPNtu8QbGped.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx87423-gPNtu8QbGped.jpg"
+          },
+          "addedDate": "2025-11-25T10:23:24.470Z"
+        },
+        {
+          "id": 72451,
+          "title": {
+            "english": "Horimiya",
+            "romaji": "Horimiya",
+            "native": "ホリミヤ"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx72451-vVXtRwyttjGG.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx72451-vVXtRwyttjGG.png"
+          },
+          "addedDate": "2025-11-25T10:23:40.903Z"
+        },
+        {
+          "id": 30012,
+          "title": {
+            "english": "Bleach",
+            "romaji": "BLEACH",
+            "native": "BLEACH"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-1epmVfTSv2rr.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30012-1epmVfTSv2rr.png"
+          },
+          "addedDate": "2025-11-25T10:23:51.349Z"
+        },
+        {
+          "id": 30011,
+          "title": {
+            "english": "Naruto",
+            "romaji": "NARUTO",
+            "native": "NARUTO -ナルト-"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/nx30011-9yUF1dXWgDOx.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/nx30011-9yUF1dXWgDOx.jpg"
+          },
+          "addedDate": "2025-11-25T10:25:50.699Z"
+        },
+        {
+          "id": 65243,
+          "title": {
+            "english": "Haikyu!!",
+            "romaji": "Haikyuu!!",
+            "native": "ハイキュー！！"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx65243-mR4MnJFmfaOF.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx65243-mR4MnJFmfaOF.png"
+          },
+          "addedDate": "2025-11-25T10:26:05.013Z"
+        },
+        {
+          "id": 30021,
+          "title": {
+            "english": "Death Note",
+            "romaji": "DEATH NOTE",
+            "native": "DEATH NOTE"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30021-FE6kmrfpuKyb.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30021-FE6kmrfpuKyb.jpg"
+          },
+          "addedDate": "2025-11-25T10:27:18.321Z"
+        },
+        {
+          "id": 101517,
+          "title": {
+            "romaji": "Jujutsu Kaisen",
+            "english": "Jujutsu Kaisen"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx101517-H3TdM3g5ZUe9.jpg"
+          },
+          "addedDate": "2025-11-27T07:58:57.884Z"
         }
       ],
-      "reading": [],
-      "completed": [],
+      "reading": [
+        {
+          "id": 34632,
+          "title": {
+            "english": "Goodnight Punpun",
+            "romaji": "Oyasumi Punpun",
+            "native": "おやすみプンプン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx34632-5xMDkx3pXsEh.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx34632-5xMDkx3pXsEh.png"
+          },
+          "addedDate": "2025-11-25T10:22:34.350Z",
+          "status": "reading"
+        },
+        {
+          "id": 101517,
+          "title": {
+            "romaji": "Jujutsu Kaisen",
+            "english": "Jujutsu Kaisen"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx101517-H3TdM3g5ZUe9.jpg"
+          },
+          "addedDate": "2025-11-27T07:59:01.066Z",
+          "status": "reading"
+        },
+        {
+          "id": 105778,
+          "title": {
+            "romaji": "Chainsaw Man",
+            "english": "Chainsaw Man"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-30T15:36:29.471Z",
+          "status": "reading"
+        }
+      ],
+      "completed": [
+        {
+          "id": 30013,
+          "title": {
+            "english": "One Piece",
+            "romaji": "ONE PIECE",
+            "native": "ONE PIECE"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30013-BeslEMqiPhlk.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30013-BeslEMqiPhlk.jpg"
+          },
+          "addedDate": "2025-11-25T10:22:48.435Z",
+          "status": "completed"
+        },
+        {
+          "id": 30012,
+          "title": {
+            "english": "Bleach",
+            "romaji": "BLEACH",
+            "native": "BLEACH"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-1epmVfTSv2rr.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30012-1epmVfTSv2rr.png"
+          },
+          "addedDate": "2025-11-25T10:23:52.398Z",
+          "status": "completed"
+        }
+      ],
       "planToRead": [
         {
           "id": 105398,
@@ -68,21 +225,50 @@
           "status": "planToRead"
         },
         {
-          "id": 105778,
+          "id": 87423,
           "title": {
-            "english": "Chainsaw Man",
-            "romaji": "Chainsaw Man",
-            "native": "チェンソーマン"
+            "english": "The Promised Neverland",
+            "romaji": "Yakusoku no Neverland",
+            "native": "約束のネバーランド"
           },
           "coverImage": {
-            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
-            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx87423-gPNtu8QbGped.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx87423-gPNtu8QbGped.jpg"
           },
-          "addedDate": "2025-11-24T08:13:44.311Z",
+          "addedDate": "2025-11-25T10:23:23.252Z",
+          "status": "planToRead"
+        },
+        {
+          "id": 97852,
+          "title": {
+            "english": "Komi Can't Communicate",
+            "romaji": "Komi-san wa, Komyushou desu.",
+            "native": "古見さんは、コミュ症です。"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx97852-M7vlc2OGR2gp.jpg",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx97852-M7vlc2OGR2gp.jpg"
+          },
+          "addedDate": "2025-11-25T10:24:26.073Z",
           "status": "planToRead"
         }
       ],
-      "dropped": []
+      "dropped": [
+        {
+          "id": 72451,
+          "title": {
+            "english": "Horimiya",
+            "romaji": "Horimiya",
+            "native": "ホリミヤ"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx72451-vVXtRwyttjGG.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx72451-vVXtRwyttjGG.png"
+          },
+          "addedDate": "2025-11-25T10:23:39.852Z",
+          "status": "dropped"
+        }
+      ]
     },
     "avatarFrame": ""
   },
@@ -107,6 +293,39 @@
             "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
           },
           "addedDate": "2025-11-25T09:00:39.041Z"
+        },
+        {
+          "id": 30013,
+          "title": {
+            "romaji": "One Piece",
+            "english": "One Piece"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30013-BeslEMqiPhlk.jpg"
+          },
+          "addedDate": "2025-11-27T09:07:12.173Z"
+        },
+        {
+          "id": 87423,
+          "title": {
+            "romaji": "The Promised Neverland",
+            "english": "The Promised Neverland"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx87423-gPNtu8QbGped.jpg"
+          },
+          "addedDate": "2025-11-27T10:38:23.552Z"
+        },
+        {
+          "id": 105398,
+          "title": {
+            "romaji": "Solo Leveling",
+            "english": "Solo Leveling"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105398-b673Vt5ZSuz3.jpg"
+          },
+          "addedDate": "2025-11-29T19:45:25.381Z"
         }
       ],
       "reading": [
@@ -123,11 +342,49 @@
           },
           "addedDate": "2025-11-25T09:00:40.762Z",
           "status": "reading"
+        },
+        {
+          "id": 87423,
+          "title": {
+            "romaji": "The Promised Neverland",
+            "english": "The Promised Neverland"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx87423-gPNtu8QbGped.jpg"
+          },
+          "addedDate": "2025-11-27T10:38:27.792Z",
+          "status": "reading"
         }
       ],
-      "completed": [],
+      "completed": [
+        {
+          "id": 30013,
+          "title": {
+            "romaji": "One Piece",
+            "english": "One Piece"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30013-BeslEMqiPhlk.jpg"
+          },
+          "addedDate": "2025-11-27T09:02:43.093Z",
+          "status": "completed"
+        }
+      ],
       "planToRead": [],
-      "dropped": []
+      "dropped": [
+        {
+          "id": 105398,
+          "title": {
+            "romaji": "Solo Leveling",
+            "english": "Solo Leveling"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105398-b673Vt5ZSuz3.jpg"
+          },
+          "addedDate": "2025-11-29T19:45:27.411Z",
+          "status": "dropped"
+        }
+      ]
     },
     "avatarFrame": ""
   },
@@ -139,8 +396,37 @@
     "avatar": "https://api.dicebear.com/7.x/lorelei-neutral/svg?seed=1",
     "background": "images/onepiece/693/01.jpg",
     "library": {
-      "favorites": [],
-      "reading": [],
+      "favorites": [
+        {
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-25T09:54:43.302Z"
+        }
+      ],
+      "reading": [
+        {
+          "id": 105778,
+          "title": {
+            "english": "Chainsaw Man",
+            "romaji": "Chainsaw Man",
+            "native": "チェンソーマン"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx105778-euxXZEIfDY2u.png",
+            "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx105778-euxXZEIfDY2u.png"
+          },
+          "addedDate": "2025-11-25T09:54:45.013Z",
+          "status": "reading"
+        }
+      ],
       "completed": [],
       "planToRead": [],
       "dropped": []

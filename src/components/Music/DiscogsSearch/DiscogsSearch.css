@@ -1,0 +1,260 @@
+.discogs-search {
+  width: 100%;
+  padding: 20px;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-btn {
+  padding: 12px 28px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.search-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-filters label {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.type-filter {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.error-message {
+  padding: 12px 16px;
+  background: rgba(255, 74, 74, 0.1);
+  color: #ff4a4a;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 3px solid #ff4a4a;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.result-item {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.result-item:hover {
+  border-color: var(--accent);
+  background: var(--bg-primary);
+}
+
+.result-image {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.result-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-subtitle {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.result-label {
+  margin: 0;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.result-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.select-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.select-btn:hover {
+  opacity: 0.9;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.page-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .discogs-search {
+    padding: 12px;
+  }
+
+  .search-input-group {
+    flex-direction: column;
+  }
+
+  .search-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-item {
+    flex-direction: column;
+  }
+
+  .result-image {
+    width: 100%;
+    height: 150px;
+  }
+
+  .select-btn {
+    width: 100%;
+  }
+}

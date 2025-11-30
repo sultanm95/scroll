@@ -1,122 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MangaActionButtons from './MangaActionButtons';
-import { MangaReader } from '../MangaReader/MangaReader';
+import MangaComments from './MangaComments/MangaComments';
+import { useAniList } from '../../api/useAniList';
 import './MangaDetails.css';
 
 function MangaDetails() {
   const { id } = useParams();
-  const [manga, setManga] = useState(null);
+  const [mediaData, setMediaData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showReader, setShowReader] = useState(false);
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'characters', 'recommendations'
+  const { fetchMediaDetails } = useAniList();
 
   useEffect(() => {
-    fetchMangaDetails();
+    loadMediaDetails();
   }, [id]);
 
-  const fetchMangaDetails = async () => {
+  const loadMediaDetails = async () => {
     try {
       setLoading(true);
-      const query = `
-        query ($id: Int) {
-          Media(id: $id, type: MANGA) {
-            id
-            title {
-              english
-              romaji
-              native
-            }
-            coverImage {
-              large
-              extraLarge
-            }
-            bannerImage
-            description
-            averageScore
-            popularity
-            genres
-            tags {
-              name
-              rank
-            }
-            status
-            startDate {
-              year
-              month
-              day
-            }
-            endDate {
-              year
-              month
-              day
-            }
-            chapters
-            volumes
-            staff {
-              edges {
-                role
-                node {
-                  name {
-                    full
-                  }
-                }
-              }
-            }
-            characters {
-              edges {
-                role
-                node {
-                  name {
-                    full
-                  }
-                  image {
-                    medium
-                  }
-                }
-              }
-            }
-            recommendations {
-              edges {
-                node {
-                  mediaRecommendation {
-                    id
-                    title {
-                      romaji
-                      english
-                    }
-                    coverImage {
-                      medium
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const response = await fetch('https://graphql.anilist.co', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables: { id: parseInt(id) }
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.errors) {
-        throw new Error(data.errors[0].message || 'Ошибка при загрузке манги');
-      }
-
-      setManga(data.data.Media);
+      const data = await fetchMediaDetails(parseInt(id), 'MANGA');
+      setMediaData(data);
+      console.log('Media data loaded:', data);
+      console.log('Banner image:', data?.media?.banner);
     } catch (err) {
-      setError(err.message || 'Произошла ошибка при загрузке информации о манге');
-      console.error('Error fetching manga details:', err);
+      setError(err.message || 'Ошибка при загрузке информации о манге');
+      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
@@ -130,91 +40,172 @@ function MangaDetails() {
     return (
       <div className="manga-details-error">
         <p>{error}</p>
-        <button onClick={fetchMangaDetails}>Попробовать снова</button>
+        <button onClick={loadMediaDetails}>Попробовать снова</button>
       </div>
     );
   }
 
-  if (!manga) {
+  if (!mediaData) {
     return <div className="manga-details-not-found">Манга не найдена</div>;
   }
 
+  const { media, characters, recommendations } = mediaData;
+
   return (
     <div className="manga-details-page">
-      {manga.bannerImage && (
+      {media.banner && (
         <div className="banner-container">
-          <img src={manga.bannerImage} alt="Banner" className="banner-image" />
+          <img src={media.banner} alt="Banner" className="banner-image" />
         </div>
       )}
       
-      <div className={`manga-details-content ${manga.bannerImage ? 'with-banner' : ''}`}>
+      <div className={`manga-details-content ${media.banner ? 'with-banner' : ''}`}>
+        {media.banner && (
+          <div className="manga-title-under-banner">
+            {media.title.english && media.title.english !== media.title.display && (
+              <p className="native-title">{media.title.english}</p>
+            )}
+          </div>
+        )}
         <div className="manga-main-info">
-          <div className="manga-cover">
-            <img 
-              src={manga.coverImage.large} 
-              alt={manga.title.english || manga.title.romaji} 
-              className="cover-image"
+          <div className="manga-left-column">
+            <div className="manga-cover">
+              <img 
+                src={media.cover.large} 
+                alt={media.title.display} 
+                className="cover-image"
+              />
+            </div>
+            <MangaActionButtons 
+              mangaId={media.id} 
+              mangaData={{
+                id: media.id,
+                title: { romaji: media.title.display, english: media.title.english },
+                coverImage: { large: media.cover.large }
+              }} 
             />
           </div>
-          
+
           <div className="manga-info">
-            <h1>{manga.title.english || manga.title.romaji}</h1>
-            {manga.title.native && <h2 className="native-title">{manga.title.native}</h2>}
+            <span className='probel'>.</span>
+            <h1>{media.title.display}</h1>
+            {media.title.english && media.title.english !== media.title.display && (
+              <p className="native-title">{media.title.english}</p>
+            )}
+            {mediaData.staff && mediaData.staff.length > 0 && (
+              <p className="author-name">
+                {mediaData.staff.map(s => s.name).join(', ')}
+              </p>
+            )}
             
             <div className="manga-stats">
-              {manga.averageScore && (
+              {media.score10 && (
                 <div className="stat">
                   <span className="label">Рейтинг:</span>
-                  <span className="value">{manga.averageScore}%</span>
+                  <span className="value">{media.score10}</span>
                 </div>
               )}
-              <div className="stat">
-                <span className="label">Популярность:</span>
-                <span className="value">{manga.popularity}</span>
-              </div>
-              {manga.chapters && (
+              {media.chapters && (
                 <div className="stat">
                   <span className="label">Главы:</span>
-                  <span className="value">{manga.chapters}</span>
+                  <span className="value">{media.chapters}</span>
                 </div>
               )}
-              {manga.volumes && (
+              {media.volumes && (
                 <div className="stat">
                   <span className="label">Тома:</span>
-                  <span className="value">{manga.volumes}</span>
+                  <span className="value">{media.volumes}</span>
                 </div>
               )}
             </div>
 
             <div className="manga-genres">
-              {manga.genres.map(genre => (
+              {media.genres.map(genre => (
                 <span key={genre} className="genre-tag">{genre}</span>
               ))}
             </div>
 
-            <div className="manga-description" 
-              dangerouslySetInnerHTML={{ __html: manga.description }} 
-            />
+            {/* Tabs Navigation */}
+            <div className="manga-tabs">
+              <button 
+                className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+                onClick={() => setActiveTab('info')}
+              >
+                Описание
+              </button>
+              {characters.list && characters.list.length > 0 && (
+                <button 
+                  className={`tab-btn ${activeTab === 'characters' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('characters')}
+                >
+                  Персонажи ({characters.list.length})
+                </button>
+              )}
+              {recommendations && recommendations.length > 0 && (
+                <button 
+                  className={`tab-btn ${activeTab === 'recommendations' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('recommendations')}
+                >
+                  Похожее ({recommendations.length})
+                </button>
+              )}
+              <button 
+                className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+                onClick={() => setActiveTab('reviews')}
+              >
+                Отзывы
+              </button>
+            </div>
 
-            <MangaActionButtons mangaId={manga.id} mangaData={manga} />
-            
-            <button 
-              className="read-manga-button"
-              onClick={() => setShowReader(!showReader)}
-            >
-              {showReader ? 'Скрыть читалку' : 'Читать мангу'}
-            </button>
+            {/* Tab Content - Description */}
+            {activeTab === 'info' && (
+              <div className="tab-content info-tab">
+                <div className="manga-description" 
+                  dangerouslySetInnerHTML={{ __html: media.description }} 
+                />
+              </div>
+            )}
+
+            {/* Tab Content - Characters */}
+            {activeTab === 'characters' && characters.list && characters.list.length > 0 && (
+              <div className="tab-content characters-tab">
+                <div className="characters-grid">
+                  {characters.list.map((character) => (
+                    <div key={character.id} className="character-card">
+                      {character.image && (
+                        <img src={character.image} alt={character.name} />
+                      )}
+                      <p className="character-name">{character.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab Content - Recommendations */}
+            {activeTab === 'recommendations' && recommendations && recommendations.length > 0 && (
+              <div className="tab-content recommendations-tab">
+                <div className="recommendations-grid">
+                  {recommendations.map((rec) => (
+                    <div key={rec.id} className="recommendation-card">
+                      {rec.cover && (
+                        <img src={rec.cover} alt={rec.title} />
+                      )}
+                      <p>{rec.title}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab Content - Reviews */}
+            {activeTab === 'reviews' && (
+              <div className="tab-content reviews-tab">
+                <MangaComments mangaId={media.id} />
+              </div>
+            )}
           </div>
         </div>
-
-        {showReader && (
-          <div className="manga-reader-container">
-            <MangaReader 
-              anilistTitle={manga.title.english || manga.title.romaji}
-              anilistData={manga}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
