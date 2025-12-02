@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import MangaDetails from '../components/MangaDetails/MangaDetails';
 import { useAuth } from '../components/Auth/AuthContext';
 import './MangaProfilePage.css';
 
 const MangaProfilePage = () => {
   const { id } = useParams();
+  const location = useLocation();
   const { user } = useAuth();
   const [manga, setManga] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [listStatus, setListStatus] = useState(null);
   const [showListModal, setShowListModal] = useState(false);
+  const [highlightReviewId, setHighlightReviewId] = useState(null);
 
   useEffect(() => {
     const fetchMangaData = async () => {
@@ -40,6 +42,20 @@ const MangaProfilePage = () => {
 
     fetchMangaData();
   }, [id, user]);
+
+  useEffect(() => {
+    // Получаем highlightReviewId из state навигации
+    if (location.state?.state?.highlightReviewId) {
+      setHighlightReviewId(location.state.state.highlightReviewId);
+      // Скроллим до секции отзывов через 500ms
+      setTimeout(() => {
+        const reviewsSection = document.querySelector('[data-section="reviews"]');
+        if (reviewsSection) {
+          reviewsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+    }
+  }, [location.state?.state?.highlightReviewId]);
 
   const handleToggleFavorite = async () => {
     if (!user) {
@@ -93,7 +109,7 @@ const MangaProfilePage = () => {
     <div className="manga-profile-page">
       {manga && (
         <>
-          <MangaDetails manga={manga} />
+          <MangaDetails manga={manga} highlightReviewId={highlightReviewId} />
           
           <div className="manga-actions">
             <button className="read-button">

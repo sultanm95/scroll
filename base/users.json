@@ -137,6 +137,17 @@
             "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx101517-H3TdM3g5ZUe9.jpg"
           },
           "addedDate": "2025-11-27T07:58:57.884Z"
+        },
+        {
+          "id": 98416,
+          "title": {
+            "romaji": "Dr. STONE",
+            "english": "Dr. STONE"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/b98416-L44f4idEGMAX.jpg"
+          },
+          "addedDate": "2025-11-30T17:17:41.719Z"
         }
       ],
       "reading": [
@@ -206,6 +217,18 @@
             "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30012-1epmVfTSv2rr.png"
           },
           "addedDate": "2025-11-25T10:23:52.398Z",
+          "status": "completed"
+        },
+        {
+          "id": 98416,
+          "title": {
+            "romaji": "Dr. STONE",
+            "english": "Dr. STONE"
+          },
+          "coverImage": {
+            "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/b98416-L44f4idEGMAX.jpg"
+          },
+          "addedDate": "2025-11-30T17:17:40.785Z",
           "status": "completed"
         }
       ],

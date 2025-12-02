@@ -6,9 +6,11 @@ import MangaList from "../components/MangaDetails/MangaList/MangaList";
 import Catalog from "../components/Catalog/Catalog";
 import MangaDetails from "../components/MangaDetails/MangaDetails.jsx";
 import SearchPage from "../pages/SearchPage/SearchPage";
+import MusicSearchPage from "../pages/MusicSearchPage/MusicSearchPage";
 import ProfilePage from "../pages/ProfilePage/ProfilePage";
 import MusicPage from "../pages/MusicPage/MusicPage";
 import MusicProfilePage from "../pages/MusicProfilePage/MusicProfilePage";
+import ChartsPage from "../pages/ChartsPage/ChartsPage";
 import ReaderPage from "../pages/ReaderPage/ReaderPage";
 import ChatBot from "../components/ChatBot/ChatBot";
 import { LibraryPage } from "../pages/LibraryPage/LibraryPage";
@@ -30,11 +32,12 @@ function App() {
               <Route path="/manga/:id" element={<MangaDetails />} />
               <Route path="/music/:id" element={<MusicProfilePage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/music-search" element={<MusicSearchPage />} />
               <Route path="/reader-search" element={<ReaderPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/music" element={<MusicPage />} />
               <Route path="/playlist" element={<MusicPage />} />
-              <Route path="/charts" element={<MusicPage />} />
+              <Route path="/charts" element={<ChartsPage />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/reviews" element={<ReviewsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

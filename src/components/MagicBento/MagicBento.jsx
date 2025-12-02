@@ -12,7 +12,6 @@ const DEFAULT_GLOW_COLOR = '255, 76, 76'; // #ff4c4c
 const MOBILE_BREAKPOINT = 768;
 
 const generateDefaultCardData = (userData) => {
-  console.log('Generating card data for user:', userData);
   const baseCards = [
     {
       color: '#060010',
@@ -224,7 +223,9 @@ const ReviewsCardContent = ({ navigate, user }) => {
             <ReviewElement 
               key={review.id}
               review={review}
-              onNavigate={navigate}
+              onNavigate={(link, state) => {
+                navigate(link, { state });
+              }}
             />
           ))}
         </div>
@@ -241,7 +242,12 @@ const ReviewsCardContent = ({ navigate, user }) => {
 const SettingsCardContent = ({ navigate, user }) => {
   return (
     <div className="card-content-simple">
-      <h3>Settings</h3> 
+      <h3 
+        className="settings-title-simple"
+        style={{ cursor: 'pointer' }}
+      >
+        <span onClick={() => navigate('/settings')}>Настройки →</span>
+      </h3>
     </div>
   );
 };

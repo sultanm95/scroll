@@ -1,36 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import MangaActionButtons from './MangaActionButtons';
 import MangaComments from './MangaComments/MangaComments';
 import { useAniList } from '../../api/useAniList';
 import './MangaDetails.css';
 
-function MangaDetails() {
+function MangaDetails({ highlightReviewId: propHighlightReviewId }) {
   const { id } = useParams();
+  const location = useLocation();
   const [mediaData, setMediaData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'characters', 'recommendations'
   const { fetchMediaDetails } = useAniList();
+  
+  // Получаем highlightReviewId либо из props, либо из location.state
+  const highlightReviewId = propHighlightReviewId || location.state?.highlightReviewId;
 
-  useEffect(() => {
-    loadMediaDetails();
-  }, [id]);
-
-  const loadMediaDetails = async () => {
+  const loadMediaDetails = useCallback(async () => {
     try {
       setLoading(true);
       const data = await fetchMediaDetails(parseInt(id), 'MANGA');
       setMediaData(data);
-      console.log('Media data loaded:', data);
-      console.log('Banner image:', data?.media?.banner);
     } catch (err) {
       setError(err.message || 'Ошибка при загрузке информации о манге');
-      console.error('Error:', err);
+      console.error('Error loading manga details:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fetchMediaDetails]);
+
+  useEffect(() => {
+    loadMediaDetails();
+  }, [loadMediaDetails]);
+
+  useEffect(() => {
+    // Если есть highlightReviewId, открываем вкладку отзывов
+    if (highlightReviewId && !loading && mediaData) {
+      setActiveTab('reviews');
+      // Скроллим к секции отзывов через небольшую задержку
+      setTimeout(() => {
+        const reviewsSection = document.querySelector('.reviews-tab');
+        const mangaDetailsPage = document.querySelector('.manga-details-page');
+        if (reviewsSection) {
+          reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (mangaDetailsPage) {
+          mangaDetailsPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
+    }
+  }, [highlightReviewId, loading, mediaData]);
 
   if (loading) {
     return <div className="manga-details-loading">Загрузка...</div>;
@@ -201,7 +220,7 @@ function MangaDetails() {
             {/* Tab Content - Reviews */}
             {activeTab === 'reviews' && (
               <div className="tab-content reviews-tab">
-                <MangaComments mangaId={media.id} />
+                <MangaComments mangaId={media.id} highlightReviewId={highlightReviewId} />
               </div>
             )}
           </div>

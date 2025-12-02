@@ -1,7 +1,7 @@
 .music-details-page {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: var(--background) !important;
 }
 
 .music-details-loading,

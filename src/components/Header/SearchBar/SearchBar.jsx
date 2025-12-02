@@ -92,6 +92,8 @@ const SearchBar = () => {
     if (query.trim()) {
       if (searchMode === 'manga') {
         navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      } else if (searchMode === 'music') {
+        navigate(`/music-search?q=${encodeURIComponent(query.trim())}`);
       }
       setShowDropdown(false);
     }

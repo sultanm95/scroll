@@ -517,6 +517,8 @@ const MagicBentoMusic = ({
   const [currentTrack, setCurrentTrack] = useState(null);
   const [cards, setCards] = useState(() => buildCardData(user, []));
   const shouldDisableAnimations = disableAnimations || isMobile;
+  const [charts, setCharts] = useState([]);
+  const [chartsLoading, setChartsLoading] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -527,8 +529,33 @@ const MagicBentoMusic = ({
   useEffect(() => {
     if (user) {
       loadUserPlaylist();
+      loadCharts();
     }
   }, [user]);
+
+  const loadCharts = async () => {
+    setChartsLoading(true);
+    try {
+      const response = await fetch(`http://localhost:3001/api/discogs/charts?sort=popularity&page=1&per_page=100`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Charts data:', data);
+        setCharts(data.results || []);
+      } else {
+        console.error('Failed to load charts:', response.status);
+        setCharts([]);
+      }
+    } catch (err) {
+      console.error('Error loading charts:', err);
+      setCharts([]);
+    } finally {
+      setChartsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCharts();
+  }, []);
 
   const loadUserPlaylist = async () => {
     if (!user?.id) return;
@@ -815,35 +842,125 @@ const MagicBentoMusic = ({
                     )}
                   </div>
                 ) : index === 2 ? (
-                  <>
-                    <div 
-                      className="magic-bento-card__header"
-                      onClick={() => {
-                        console.log('Clicked on card:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <div className="magic-bento-card__label">{card.label}</div>
+                  <div 
+                    className="magic-bento-card__content"
+                    style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      overflow: 'hidden',
+                      maxHeight: '100%',
+                      padding: '16px',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  >
+                    <div style={{ 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid rgba(255, 76, 76, 0.2)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        fontWeight: '600', 
+                        color: 'var(--accent)'
+                      }}>
+                        TOP 10 CHARTS
+                      </div>
+                      <button 
+                        onClick={() => navigate('/charts')}
+                        style={{
+                          padding: '4px 12px',
+                          background: 'rgba(255, 76, 76, 0.2)',
+                          color: 'var(--accent)',
+                          border: '1px solid var(--accent)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 76, 76, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 76, 76, 0.2)';
+                        }}
+                      >
+                        VIEW ALL →
+                      </button>
                     </div>
-                    <div 
-                      className="magic-bento-card__content"
-                      onClick={() => {
-                        console.log('Clicked on card content:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <h2 className="magic-bento-card__title">{card.title}</h2>
-                      <p className="magic-bento-card__description">{card.description}</p>
-                    </div>
-                  </>
+
+                    {chartsLoading ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                        Загрузка...
+                      </div>
+                    ) : charts.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                        Нет доступных чартов
+                      </div>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        overflow: 'auto',
+                        maxHeight: '100%'
+                      }}>
+                        {charts.slice(0, 10).map((chart, idx) => (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              if (chart.id) {
+                                loadAlbumTracks(chart.id);
+                              }
+                            }}
+                            style={{
+                              padding: '10px 12px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              color: 'var(--text)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              borderLeft: '3px solid var(--accent)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.15)';
+                              e.currentTarget.style.transform = 'translateX(4px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                              e.currentTarget.style.transform = 'translateX(0)';
+                            }}
+                            title={chart.title}
+                          >
+                            <span style={{ color: 'var(--muted)', fontWeight: '600', minWidth: '24px' }}>
+                              #{idx + 1}
+                            </span>
+                            <div style={{ flex: 1, overflow: 'hidden' }}>
+                              <div style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {chart.title}
+                              </div>
+                              <div style={{ fontSize: '9px', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
+                                {chart.resource_url ? 'Discogs' : 'Unknown'}
+                              </div>
+                            </div>
+                            {chart.year && (
+                              <span style={{ color: 'var(--muted)', fontSize: '9px' }}>
+                                {chart.year}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ) : index === 3 ? (
                   <div 
                     className="magic-bento-card__content library-content"
@@ -1101,35 +1218,125 @@ const MagicBentoMusic = ({
                     </div>
                   </>
                 ) : index === 2 ? (
-                  <>
-                    <div 
-                      className="magic-bento-card__header"
-                      onClick={() => {
-                        console.log('Clicked on card:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <div className="magic-bento-card__label">{card.label}</div>
+                  <div 
+                    className="magic-bento-card__content"
+                    style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      overflow: 'hidden',
+                      maxHeight: '100%',
+                      padding: '16px',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  >
+                    <div style={{ 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid rgba(255, 76, 76, 0.2)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        fontWeight: '600', 
+                        color: 'var(--accent)'
+                      }}>
+                        TOP 100 CHARTS
+                      </div>
+                      <button 
+                        onClick={() => navigate('/charts')}
+                        style={{
+                          padding: '4px 12px',
+                          background: 'rgba(255, 76, 76, 0.2)',
+                          color: 'var(--accent)',
+                          border: '1px solid var(--accent)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 76, 76, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 76, 76, 0.2)';
+                        }}
+                      >
+                        VIEW ALL →
+                      </button>
                     </div>
-                    <div 
-                      className="magic-bento-card__content"
-                      onClick={() => {
-                        console.log('Clicked on card content:', card.title);
-                        if (card.link) {
-                          console.log('Navigating to:', card.link);
-                          navigate(card.link);
-                        }
-                      }}
-                      style={{ cursor: card.link ? 'pointer' : 'default' }}
-                    >
-                      <h2 className="magic-bento-card__title">{card.title}</h2>
-                      <p className="magic-bento-card__description">{card.description}</p>
-                    </div>
-                  </>
+
+                    {chartsLoading ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                        Загрузка...
+                      </div>
+                    ) : charts.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px 0' }}>
+                        Нет доступных чартов
+                      </div>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        overflow: 'auto',
+                        maxHeight: '100%'
+                      }}>
+                        {charts.map((chart, idx) => (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              if (chart.id) {
+                                loadAlbumTracks(chart.id);
+                              }
+                            }}
+                            style={{
+                              padding: '10px 12px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              color: 'var(--text)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              borderLeft: '3px solid var(--accent)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 76, 76, 0.15)';
+                              e.currentTarget.style.transform = 'translateX(4px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                              e.currentTarget.style.transform = 'translateX(0)';
+                            }}
+                            title={chart.title}
+                          >
+                            <span style={{ color: 'var(--muted)', fontWeight: '600', minWidth: '24px' }}>
+                              #{idx + 1}
+                            </span>
+                            <div style={{ flex: 1, overflow: 'hidden' }}>
+                              <div style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {chart.title}
+                              </div>
+                              <div style={{ fontSize: '9px', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
+                                {chart.resource_url ? 'Discogs' : 'Unknown'}
+                              </div>
+                            </div>
+                            {chart.year && (
+                              <span style={{ color: 'var(--muted)', fontSize: '9px' }}>
+                                {chart.year}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <div 

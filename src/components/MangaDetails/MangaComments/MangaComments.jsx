@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../Auth/AuthContext';
 import './MangaComments.css';
 
-const MangaComments = ({ mangaId }) => {
+const MangaComments = ({ mangaId, highlightReviewId }) => {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -12,11 +12,30 @@ const MangaComments = ({ mangaId }) => {
   const [editContent, setEditContent] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState('');
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editingReplyContent, setEditingReplyContent] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
     loadComments();
   }, [mangaId]);
+
+  useEffect(() => {
+    // Подсвечиваем отзыв если есть highlightReviewId
+    if (highlightReviewId && comments.length > 0) {
+      setTimeout(() => {
+        const reviewElement = document.querySelector(`[data-review-id="${highlightReviewId}"]`);
+        if (reviewElement) {
+          reviewElement.classList.add('highlighted');
+          reviewElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Убираем подсветку через 3 секунды
+          setTimeout(() => {
+            reviewElement.classList.remove('highlighted');
+          }, 3000);
+        }
+      }, 300);
+    }
+  }, [highlightReviewId, comments]);
 
   const loadComments = async () => {
     try {
@@ -62,17 +81,18 @@ const MangaComments = ({ mangaId }) => {
         })
       });
 
-      if (response.ok) {
-        const comment = await response.json();
-        setComments([comment, ...comments]);
-        setNewComment('');
-        setRating(5);
-      } else {
-        alert('Ошибка при добавлении комментария');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
+
+      const comment = await response.json();
+      setComments([comment, ...comments]);
+      setNewComment('');
+      setRating(5);
     } catch (error) {
       console.error('Error posting comment:', error);
-      alert('Ошибка при добавлении комментария');
+      alert(`Ошибка при добавлении комментария: ${error.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -105,17 +125,18 @@ const MangaComments = ({ mangaId }) => {
         })
       });
 
-      if (response.ok) {
-        const updatedComment = await response.json();
-        setComments(comments.map(c => c.id === parentId ? updatedComment : c));
-        setReplyingTo(null);
-        setReplyContent('');
-      } else {
-        alert('Ошибка при добавлении ответа');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
+
+      const updatedComment = await response.json();
+      setComments(comments.map(c => c.id === parentId ? updatedComment : c));
+      setReplyingTo(null);
+      setReplyContent('');
     } catch (error) {
       console.error('Error posting reply:', error);
-      alert('Ошибка при добавлении ответа');
+      alert(`Ошибка при добавлении ответа: ${error.message}`);
     }
   };
 
@@ -125,17 +146,22 @@ const MangaComments = ({ mangaId }) => {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     
     try {
-      await fetch(`http://localhost:3001/api/comments/${commentId}`, {
+      const response = await fetch(`http://localhost:3001/api/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
       setComments(comments.filter(c => c.id !== commentId));
     } catch (error) {
       console.error('Error deleting comment:', error);
-      alert('Ошибка при удалении комментария');
+      alert(`Ошибка при удалении комментария: ${error.message}`);
     }
   };
 
@@ -157,14 +183,18 @@ const MangaComments = ({ mangaId }) => {
         body: JSON.stringify({ content: editContent.trim() })
       });
 
-      if (response.ok) {
-        const updated = await response.json();
-        setComments(comments.map(c => c.id === commentId ? updated : c));
-        setEditingId(null);
-        setEditContent('');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
+
+      const updated = await response.json();
+      setComments(comments.map(c => c.id === commentId ? updated : c));
+      setEditingId(null);
+      setEditContent('');
     } catch (error) {
       console.error('Error updating comment:', error);
+      alert(`Ошибка при обновлении комментария: ${error.message}`);
     }
   };
 
@@ -181,12 +211,49 @@ const MangaComments = ({ mangaId }) => {
         }
       });
 
-      if (response.ok) {
-        const updatedComment = await response.json();
-        setComments(comments.map(c => c.id === commentId ? updatedComment : c));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
+
+      const updatedComment = await response.json();
+      setComments(comments.map(c => c.id === commentId ? updatedComment : c));
     } catch (error) {
       console.error('Error deleting reply:', error);
+      alert(`Ошибка при удалении ответа: ${error.message}`);
+    }
+  };
+
+  const handleEditReply = async (commentId, replyId) => {
+    if (!editingReplyContent.trim()) {
+      alert('Ответ не может быть пустым');
+      return;
+    }
+
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    
+    try {
+      const response = await fetch(`http://localhost:3001/api/comments/${commentId}/replies/${replyId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: editingReplyContent.trim() })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
+      const updatedComment = await response.json();
+      setComments(comments.map(c => c.id === commentId ? updatedComment : c));
+      setEditingReplyId(null);
+      setEditingReplyContent('');
+    } catch (error) {
+      console.error('Error updating reply:', error);
+      alert(`Ошибка при обновлении ответа: ${error.message}`);
     }
   };
 
@@ -200,20 +267,61 @@ const MangaComments = ({ mangaId }) => {
       <div className="replies-list">
         {replies?.map(reply => (
           <div key={reply.id} className="reply-item">
-            <div className="reply-header">
-              <span className="reply-username">{reply.username}</span>
-              <span className="reply-date">
-                {new Date(reply.createdAt).toLocaleDateString('ru-RU')}
-              </span>
-            </div>
-            <p className="reply-content">{reply.content}</p>
-            {user?.id === reply.userId && (
-              <button 
-                className="delete-reply-btn"
-                onClick={() => handleDeleteReply(parentId, reply.id)}
-              >
-                Удалить
-              </button>
+            {editingReplyId === reply.id ? (
+              <div className="edit-form">
+                <textarea
+                  value={editingReplyContent}
+                  onChange={(e) => setEditingReplyContent(e.target.value)}
+                  maxLength="300"
+                  rows="2"
+                />
+                <div className="edit-buttons">
+                  <button 
+                    onClick={() => handleEditReply(parentId, reply.id)}
+                    className="save-btn"
+                  >
+                    Сохранить
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setEditingReplyId(null);
+                      setEditingReplyContent('');
+                    }}
+                    className="cancel-btn"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="reply-header">
+                  <span className="reply-username">{reply.username}</span>
+                  <span className="reply-date">
+                    {new Date(reply.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
+                </div>
+                <p className="reply-content">{reply.content}</p>
+                {user?.id === reply.userId && (
+                  <div className="reply-actions">
+                    <button 
+                      className="edit-reply-btn"
+                      onClick={() => {
+                        setEditingReplyId(reply.id);
+                        setEditingReplyContent(reply.content);
+                      }}
+                    >
+                      Редактировать
+                    </button>
+                    <button 
+                      className="delete-reply-btn"
+                      onClick={() => handleDeleteReply(parentId, reply.id)}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}
@@ -274,7 +382,7 @@ const MangaComments = ({ mangaId }) => {
       ) : (
         <div className="comments-list">
           {comments.map(comment => (
-            <div key={comment.id} className="comment-item">
+            <div key={comment.id} className="comment-item" data-review-id={comment.id}>
               {editingId === comment.id ? (
                 <div className="edit-form">
                   <textarea

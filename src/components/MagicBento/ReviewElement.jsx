@@ -18,8 +18,19 @@ const ReviewElement = ({ review, onNavigate }) => {
     return text;
   };
 
+  const handleClick = () => {
+    if (onNavigate && review.link) {
+      // Передаем ID отзыва через state для подсветки на странице манги
+      onNavigate(review.link, { highlightReviewId: review.id });
+    }
+  };
+
   return (
-    <div className="review-element">
+    <div 
+      className="review-element"
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
+    >
       {review.mangaCover && (
         <div className="review-cover">
           <img 

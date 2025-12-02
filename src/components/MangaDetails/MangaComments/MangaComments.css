@@ -17,51 +17,67 @@
 /* === ФОРМА КОММЕНТАРИЯ === */
 .comment-form {
   margin-bottom: 32px;
-  padding: 20px;
-  background: var(--bg-primary);
-  border-radius: 10px;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 76, 76, 0.02) 100%);
+  border-radius: 12px;
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .form-group {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .form-group label {
   color: var(--text);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
 }
 
 .rating-select {
-  padding: 8px 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, var(--card) 0%, var(--card) 100%);
+  border: 1.5px solid rgba(255, 149, 0, 0.3);
+  border-radius: 8px;
   color: var(--text);
   cursor: pointer;
   font-size: 0.95rem;
+  transition: all 0.2s;
+  font-weight: 600;
+  width: 100%;
+}
+
+.rating-select:hover,
+.rating-select:focus {
+  outline: none;
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
 }
 
 .comment-textarea {
   padding: 12px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   background: var(--card);
   color: var(--text);
   font-family: inherit;
   font-size: 0.95rem;
   resize: vertical;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  width: 100%;
+  min-height: 120px;
 }
 
 .comment-textarea:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 76, 76, 0.1);
 }
 
 .form-footer {
@@ -69,31 +85,40 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 76, 76, 0.1);
 }
 
 .char-count {
   font-size: 0.85rem;
   color: var(--muted);
+  font-weight: 500;
 }
 
 .submit-btn {
-  padding: 10px 20px;
-  background: var(--accent);
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--accent) 0%, #ff5c5c 100%);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  transition: opacity 0.2s;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(255, 76, 76, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 76, 76, 0.4);
 }
 
 .submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* === АУТЕНТИФИКАЦИЯ === */
@@ -123,27 +148,45 @@
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .comment-item {
-  padding: 16px;
+  padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-primary);
-  transition: border-color 0.2s;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 76, 76, 0.02) 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 4px solid var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.comment-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255, 76, 76, 0.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .comment-item:hover {
   border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 76, 76, 0.15);
 }
 
 .comment-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 76, 76, 0.2);
 }
 
 .user-info {
@@ -153,17 +196,23 @@
 }
 
 .username {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
 }
 
 .rating {
-  color: #ff9500;
-  font-weight: 600;
-  font-size: 0.9rem;
-  background: rgba(255, 149, 0, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: linear-gradient(135deg, #ff9500 0%, #ff7b00 100%);
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .date {
@@ -172,33 +221,39 @@
 }
 
 .comment-content {
-  margin: 12px 0;
-  line-height: 1.6;
+  margin: 16px 0;
+  line-height: 1.7;
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  font-weight: 400;
 }
 
 .comment-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 76, 76, 0.1);
   flex-wrap: wrap;
 }
 
 .reply-btn,
 .edit-btn,
 .delete-btn {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border: 1px solid;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: 0.2s;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
   color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .reply-btn {
@@ -207,16 +262,18 @@
 }
 
 .reply-btn:hover {
-  background: rgba(255, 76, 76, 0.1);
+  background: rgba(255, 76, 76, 0.08);
+  transform: translateX(2px);
 }
 
 .edit-btn {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: #4a7fd4;
+  border-color: #4a7fd4;
 }
 
 .edit-btn:hover {
-  background: rgba(255, 76, 76, 0.1);
+  background: rgba(74, 127, 212, 0.08);
+  transform: translateX(2px);
 }
 
 .delete-btn {
@@ -226,6 +283,7 @@
 
 .delete-btn:hover {
   background: rgba(255, 74, 74, 0.1);
+  transform: translateX(2px);
 }
 
 /* === РЕДАКТИРОВАНИЕ === */
@@ -280,113 +338,175 @@
 
 /* === ОТВЕТЫ === */
 .reply-form {
-  margin-top: 12px;
-  padding: 12px;
-  background: var(--card);
-  border-radius: 8px;
-  border-left: 3px solid var(--accent);
+  margin-top: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--card) 0%, rgba(74, 127, 212, 0.03) 100%);
+  border-radius: 10px;
+  border-left: 4px solid #4a7fd4;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .reply-textarea {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--bg-primary);
   color: var(--text);
   font-family: inherit;
   font-size: 0.9rem;
   resize: vertical;
+  transition: all 0.2s;
 }
 
 .reply-textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: #4a7fd4;
+  box-shadow: 0 0 0 3px rgba(74, 127, 212, 0.1);
 }
 
 .reply-submit-btn {
-  padding: 8px 16px;
-  background: var(--accent);
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #4a7fd4 0%, #3a5fa8 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(74, 127, 212, 0.3);
 }
 
 .reply-submit-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(74, 127, 212, 0.4);
 }
 
 .replies-list {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .reply-item {
-  padding: 10px 12px;
-  background: var(--card);
-  border-radius: 6px;
-  border-left: 2px solid var(--accent);
+  padding: 12px 14px;
+  background: linear-gradient(135deg, var(--card) 0%, rgba(74, 127, 212, 0.02) 100%);
+  border-radius: 8px;
+  border-left: 3px solid #4a7fd4;
+  transition: all 0.2s;
+}
+
+.reply-item:hover {
+  background: linear-gradient(135deg, var(--card) 0%, rgba(74, 127, 212, 0.05) 100%);
+  transform: translateX(2px);
 }
 
 .reply-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   gap: 8px;
   flex-wrap: wrap;
 }
 
 .reply-username {
-  font-weight: 600;
-  color: var(--accent);
-  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4a7fd4;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
 }
 
 .reply-date {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .reply-content {
   color: var(--text);
   font-size: 0.9rem;
-  line-height: 1.4;
-  margin: 6px 0;
+  line-height: 1.5;
+  margin: 8px 0;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .delete-reply-btn {
   margin-top: 6px;
-  padding: 4px 8px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
   background: transparent;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.75rem;
   color: var(--text);
-  transition: 0.2s;
+  transition: all 0.2s;
+  font-weight: 600;
 }
 
 .delete-reply-btn:hover {
   background: #ff4a4a;
   border-color: #ff4a4a;
   color: white;
+  transform: translateX(2px);
+}
+
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.edit-reply-btn {
+  margin-top: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text);
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.edit-reply-btn:hover {
+  background: #4a7fd4;
+  border-color: #4a7fd4;
+  color: white;
+  transform: translateX(2px);
 }
 
 /* === RESPONSIVE === */
+/* === ПОДСВЕТКА ОТЗЫВА === */
+.comment-item.highlighted {
+  background: linear-gradient(135deg, rgba(255, 76, 76, 0.1) 0%, rgba(255, 100, 100, 0.05) 100%) !important;
+  border: 2px solid rgba(255, 76, 76, 0.6) !important;
+  box-shadow: 0 0 30px rgba(255, 76, 76, 0.4), inset 0 0 20px rgba(255, 76, 76, 0.1) !important;
+  animation: highlight-pulse 0.6s ease-in-out;
+  border-left: 4px solid #ff4c4c !important;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 30px rgba(255, 76, 76, 0.5), inset 0 0 20px rgba(255, 76, 76, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(255, 76, 76, 0.8), inset 0 0 30px rgba(255, 76, 76, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 76, 76, 0.4), inset 0 0 20px rgba(255, 76, 76, 0.1);
+  }
+}
+
 @media (max-width: 600px) {
   .manga-comments {
     padding: 16px;

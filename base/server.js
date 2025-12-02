@@ -315,7 +315,7 @@ const upload = multer({
 // Configure CORS
 app.use(cors({
   origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization'],
   exposedHeaders: ['Content-Type', 'Content-Length'],
   credentials: true
@@ -748,6 +748,36 @@ app.post('/api/user/background', (req, res) => {
 });
 
 // Manga endpoints
+
+// AniList Media Cache (in-memory)
+const anilistMediaCache = new Map();
+const CACHE_DURATION = 3600000; // 1 hour in milliseconds
+
+function getCachedMedia(mediaId, type) {
+  const cacheKey = `${mediaId}_${type}`;
+  const cached = anilistMediaCache.get(cacheKey);
+  
+  if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+    console.log(`✅ Using cached media for ID: ${mediaId} (age: ${Math.round((Date.now() - cached.timestamp) / 1000)}s)`);
+    return cached.data;
+  }
+  
+  if (cached) {
+    console.log(`⚠️ Cache expired for ID: ${mediaId}`);
+  }
+  anilistMediaCache.delete(cacheKey);
+  return null;
+}
+
+function setCachedMedia(mediaId, type, data) {
+  const cacheKey = `${mediaId}_${type}`;
+  anilistMediaCache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+  console.log(`📦 Cached media for ID: ${mediaId}. Cache size: ${anilistMediaCache.size}`);
+}
+
 app.get('/api/mangas', async (req, res) => {
   console.log('GET /api/mangas called');
   const page = parseInt(req.query.page) || 1;
@@ -781,6 +811,13 @@ app.post('/api/anilist/media', async (req, res) => {
   if (isNaN(numericId)) {
     console.warn('❌ mediaId is not a valid number:', mediaId);
     return res.status(400).json({ error: 'mediaId must be a number' });
+  }
+
+  // Check cache first
+  const cachedMedia = getCachedMedia(numericId, type);
+  if (cachedMedia) {
+    console.log(`📤 Returning cached response for media ID: ${numericId}`);
+    return res.json(cachedMedia);
   }
 
   const query = `
@@ -830,14 +867,42 @@ app.post('/api/anilist/media', async (req, res) => {
   try {
     console.log(`📤 AniList Proxy Request - Media ID: ${numericId}, Type: ${type}`);
     
-    const response = await axios.post(
-      'https://graphql.anilist.co',
-      { query, variables: { id: numericId, type } },
-      { 
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 15000
+    let response;
+    let lastError;
+    const maxRetries = 3;
+    
+    for (let retries = 0; retries < maxRetries; retries++) {
+      try {
+        response = await axios.post(
+          'https://graphql.anilist.co',
+          { query, variables: { id: numericId, type } },
+          { 
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 20000 // Increased timeout
+          }
+        );
+        console.log(`✅ Successfully fetched on attempt ${retries + 1}`);
+        break; // Success, exit retry loop
+      } catch (error) {
+        lastError = error;
+        const status = error.response?.status;
+        
+        if ((status === 429 || status === 500 || status === 503) && retries < maxRetries - 1) {
+          // Rate limit, server error or service unavailable - wait and retry
+          const waitTime = Math.pow(2, retries) * 1000; // Exponential backoff: 1s, 2s, 4s
+          console.log(`⏳ Status ${status}. Waiting ${waitTime}ms before retry ${retries + 1}/${maxRetries}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        } else if (retries === maxRetries - 1) {
+          // Last retry failed
+          throw error;
+        }
       }
-    );
+    }
+    
+    if (!response) {
+      throw lastError || new Error('No response from AniList');
+    }
 
     if (response.data.errors) {
       console.error('❌ AniList GraphQL error:', response.data.errors);
@@ -853,10 +918,15 @@ app.post('/api/anilist/media', async (req, res) => {
       return res.status(404).json({ error: 'Media not found on AniList' });
     }
 
-    console.log(`✅ Fetched media: ${media.title.english || media.title.romaji}`);
-    res.json({
+    const responseData = {
       data: { Media: media }
-    });
+    };
+    
+    // Cache the result
+    setCachedMedia(numericId, type, responseData);
+
+    console.log(`✅ Fetched media: ${media.title.english || media.title.romaji}`);
+    res.json(responseData);
   } catch (error) {
     console.error('❌ AniList proxy error:', error.message);
     console.error('Error details:', error.response?.data || error.stack);
@@ -1708,6 +1778,45 @@ app.post('/api/comments/reply', verifyToken, (req, res) => {
     res.status(201).json(parentComment);
 });
 
+// PATCH /api/comments/:commentId/replies/:replyId — редактировать ответ
+app.patch('/api/comments/:commentId/replies/:replyId', verifyToken, (req, res) => {
+    const { commentId, replyId } = req.params;
+    const { content } = req.body;
+    
+    const comments = readJSON(commentsFile);
+    const comment = comments.find(c => c.id === parseInt(commentId));
+    
+    if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    if (!comment.replies) {
+        return res.status(404).json({ error: 'Reply not found' });
+    }
+    
+    const reply = comment.replies.find(r => r.id === parseInt(replyId));
+    
+    if (!reply) {
+        return res.status(404).json({ error: 'Reply not found' });
+    }
+    
+    if (reply.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    if (content && content.trim().length > 0 && content.length <= 300) {
+        reply.content = content.trim();
+        reply.updatedAt = new Date().toISOString();
+    } else if (!content || content.trim().length === 0) {
+        return res.status(400).json({ error: 'Reply content cannot be empty' });
+    } else if (content.length > 300) {
+        return res.status(400).json({ error: 'Reply too long (max 300 characters)' });
+    }
+    
+    writeJSON(commentsFile, comments);
+    res.json(comment);
+});
+
 // DELETE /api/comments/:commentId/replies/:replyId — удалить ответ
 app.delete('/api/comments/:commentId/replies/:replyId', verifyToken, (req, res) => {
     const { commentId, replyId } = req.params;
@@ -1821,6 +1930,55 @@ app.get('/api/discogs/master/:id/versions', async (req, res) => {
 app.get('/api/discogs/genres', async (req, res) => {
     const result = await discogsClient.getGenres();
     res.json(result);
+});
+
+// GET /api/discogs/charts - топ чарты с сортировкой
+app.get('/api/discogs/charts', async (req, res) => {
+    const { sort = 'popularity', page = 1, per_page = 50, genre } = req.query;
+    
+    try {
+        let query = '';
+        
+        // Строим поисковый запрос для Discogs
+        if (genre) {
+            query = `format:album genre:${genre}`;
+        } else {
+            query = 'format:album';
+        }
+        
+        // Используем searchDiscogs с параметрами пагинации
+        const result = await discogsClient.searchDiscogs(query, 'release', parseInt(page), parseInt(per_page));
+        
+        if (result.success && result.data && Array.isArray(result.data)) {
+            // Сортируем результаты по количеству votes (как мера популярности)
+            if (sort === 'popularity') {
+                result.data.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+            } else if (sort === 'year') {
+                result.data.sort((a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0));
+            }
+            
+            // Возвращаем в формате совместимом с фронтенд
+            return res.json({
+                results: result.data,
+                pagination: result.pagination,
+                success: true
+            });
+        } else {
+            return res.json({
+                results: [],
+                pagination: {},
+                success: false,
+                error: result.error || 'No results found'
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching charts:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch charts', 
+            details: error.message,
+            results: []
+        });
+    }
 });
 
 // ============ MUSIC LIBRARY ============
